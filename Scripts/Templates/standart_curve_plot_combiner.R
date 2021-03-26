@@ -23,7 +23,7 @@ combined_plot_x
 ggsave(filename = paste(file_name, '.png', sep = ''),
        plot = combined_plot, 
        device = 'png', 
-       path = 'Figures/Combined Plots', 
+       path = 'Figures/Combined-Plots', 
        dpi = dpi, 
        height = height, 
        width = width, 
