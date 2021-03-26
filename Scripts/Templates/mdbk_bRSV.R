@@ -23,7 +23,14 @@ list_of_colours <- c('#999999',
 ###########
 
 # data prep -------------------------
-all_RSV_N_data <- read_csv("Data/all_RSV_N_data.csv")
+all_RSV_N_data <- read.csv(paste('Data/', 
+      
+                                 ############
+                                 'bRSV_data', 
+                                 ############
+
+                                 '.csv', 
+                                 sep = ''))
 
 # all dataset normalisation - reverse values so mock low and infection high
 all_RSV_N_data <- all_RSV_N_data %>%
