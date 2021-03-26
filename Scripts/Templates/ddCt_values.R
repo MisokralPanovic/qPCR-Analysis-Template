@@ -173,7 +173,7 @@ ggsave(filename = paste(file_name, '.png', sep = ''),
        units = 'cm')
 
 fwrite(hifit1, 
-       paste('Adjusted Data/', 
+       paste('Adjusted-Data/', 
              file_name, 
              '.csv', 
              sep = ''))
