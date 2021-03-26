@@ -8,7 +8,7 @@ library(data.table)
 #########
 
 ###########
-conditions <- c('Mock',
+list_of_conditions <- c('Mock',
                 'cbRSV dNS1 0.001-24',
                 'cbRSV dNS2 0.01-24',
                 'cbRSV dNS1/2 0.001-24')
@@ -28,11 +28,11 @@ mdbk_bi1 <- initial_data %>%
   filter(Target == 'bIFIT1') %>% 
   ###########
 
-  arrange(match(Condition, conditions))
+  arrange(match(Condition, list_of_conditions))
 
 mdbk_bi1 <- mdbk_bi1 %>%
   mutate(Copy_number = 10^predict(model_lmsc1, newdata = mdbk_bi1)) %>%
-  mutate(Mock_mean = mean(Value[Condition == conditions[1]],
+  mutate(Mock_mean = mean(Value[Condition == list_of_conditions[1]],
                           na.rm = T),
          Value_norm = Value / Mock_mean)
 
@@ -93,8 +93,8 @@ plot_mdbk_bi1 <- ggplot(mdbk_bi1, aes(x = Condition,
                                       y = Value_norm, 
                                       fill = Condition)) +
   geom_boxplot(varwidth = T) +
-  scale_x_discrete(limits = conditions) +
-  scale_fill_manual(breaks = conditions,
+  scale_x_discrete(limits = list_of_conditions) +
+  scale_fill_manual(breaks = list_of_conditions,
                     values = list_of_colours) +
   theme(
     plot.title = element_text(
@@ -125,21 +125,21 @@ plot_mdbk_bi1 <- ggplot(mdbk_bi1, aes(x = Condition,
   scale_y_continuous(breaks= seq(0, range_y, breaks_y), 
                      limits = c(0, range_y)) +
   
-  geom_signif(comparisons = list(c(conditions[1], conditions[2])), 
+  geom_signif(comparisons = list(c(list_of_conditions[1], list_of_conditions[2])), 
               annotation = p_val[1], 
               y_position = 0.93*range_y - 2*(range_y*0.075), 
               tip_length = 0, 
               vjust= -0.2, 
               size = 0.7, 
               textsize = textsize_values[1]) +
-  geom_signif(comparisons = list(c(conditions[1], conditions[3])), 
+  geom_signif(comparisons = list(c(list_of_conditions[1], list_of_conditions[3])), 
               annotation = p_val[2], 
               y_position = 0.93*range_y - 1*(range_y*0.075), 
               tip_length = 0, 
               vjust= -0.2, 
               size = 0.7, 
               textsize = textsize_values[2]) +
-  geom_signif(comparisons = list(c(conditions[1], conditions[4])), 
+  geom_signif(comparisons = list(c(list_of_conditions[1], list_of_conditions[4])), 
               annotation = p_val[3], 
               y_position = 0.93*range_y - 0*(range_y*0.075), 
               tip_length = 0, 
