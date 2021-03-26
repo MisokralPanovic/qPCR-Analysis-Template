@@ -12,10 +12,10 @@ library(ggpubr)
 ###########
 
 ###########
-conditions <- c('Mock',
-                'bRSV dNS1 0.001-24',
-                'bRSV dNS2 0.01-24',
-                'bRSV dNS1/2 0.001-24')
+list_of_conditions <- c('Mock',
+                        'bRSV dNS1 0.001-24',
+                        'bRSV dNS2 0.01-24',
+                        'bRSV dNS1/2 0.001-24')
 list_of_colours <- c('#999999', 
                      '#ffc034', 
                      '#9a6a00', 
@@ -37,11 +37,11 @@ mdbk_bRSVN <- all_RSV_N_data %>%
   filter(Target == 'bRSV_N') %>%
   ###########
   
-  mutate(Mock_mean = mean(Value_adju[Condition == conditions[1]],
+  mutate(Mock_mean = mean(Value_adju[Condition == list_of_conditions[1]],
                           na.rm = T),
          Value_norm = Value_adju / Mock_mean) %>% 
   
-  arrange(match(Condition, conditions))
+  arrange(match(Condition, list_of_conditions))
 
 mdbk_bRSVN
 
@@ -132,21 +132,21 @@ plot_mdbk_bRSVN <- ggplot(mdbk_bRSVN, aes(x = Condition,
   ) +
   annotation_logticks(sides='l') +
  
-  geom_signif(comparisons = list(c(conditions[1], conditions[2])), 
+  geom_signif(comparisons = list(c(list_of_conditions[1], list_of_conditions[2])), 
               annotation = p_val[1], 
               y_position = 0.93*range_y - 2*(range_y*0.075), 
               tip_length = 0, 
               vjust= -0.2, 
               size = 0.7, 
               textsize = textsize_values[1]) +
-  geom_signif(comparisons = list(c(conditions[1], conditions[3])), 
+  geom_signif(comparisons = list(c(list_of_conditions[1], list_of_conditions[3])), 
               annotation = p_val[2], 
               y_position = 0.93*range_y - 1*(range_y*0.075), 
               tip_length = 0, 
               vjust= -0.2, 
               size = 0.7, 
               textsize = textsize_values[2]) +
-  geom_signif(comparisons = list(c(conditions[1], conditions[4])), 
+  geom_signif(comparisons = list(c(list_of_conditions[1], list_of_conditions[4])), 
               annotation = p_val[3], 
               y_position = 0.93*range_y - 0*(range_y*0.075), 
               tip_length = 0, 
