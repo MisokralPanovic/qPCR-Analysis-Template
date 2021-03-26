@@ -11,6 +11,10 @@ conditions <- c('Mock',
                 'cbRSV 0.1-24',
                 'cbRSV 1-24',
                 'cbRSV 2-24')
+file_emmit <- c(T,T,T,
+                T,T,T,
+                T,T,T,
+                T,T,T)
 ########################
 
 gapdh_data <- read.csv('Data/bIFIT_data_bgapdh.csv')
@@ -37,8 +41,8 @@ gapdh_data_condition1 <- gapdh_data_condition1 %>%
 
 
 gapdh_ratios_condition1 <- rep(gapdh_data_condition1$Value_nor, each=3)
+gapdh_ratios_mdbk <- gapdh_ratios_mdbk[file_emmit]
 
 # final vector
 gapdh_ratios_condition1
 
-# ----------------------------------------------------------------------------------------------------
