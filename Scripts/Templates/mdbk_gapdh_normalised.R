@@ -8,10 +8,10 @@ library(data.table)
 ###########
 
 ###########
-conditions <- c('Mock',
-                'cbRSV dNS1 0.001-24',
-                'cbRSV dNS2 0.01-24',
-                'cbRSV dNS1/2 0.001-24')
+list_of_conditions <- c('Mock',
+                        'cbRSV dNS1 0.001-24',
+                        'cbRSV dNS2 0.01-24',
+                        'cbRSV dNS1/2 0.001-24')
 list_of_colours <- c('#999999', 
                      '#ffc034', 
                      '#9a6a00', 
@@ -30,11 +30,11 @@ b24_1 <- initial_data %>%
 
 b24_1 <- b24_1 %>%
   mutate(Copy_number = 10^predict(model_lmsc1, newdata = b24_1)) %>%
-  arrange(match(Condition, conditions)) %>%
+  arrange(match(Condition, list_of_conditions)) %>%
 
     mutate(Factor = gapdh_ratios_24) %>%
   mutate(Copy_number_mod = Copy_number / Factor) %>%
-  mutate(Mock_mean = mean(Copy_number_mod[Condition == conditions[1]],
+  mutate(Mock_mean = mean(Copy_number_mod[Condition == list_of_conditions[1]],
                           na.rm = T),
          Value_norm = Copy_number_mod / Mock_mean) %>%
   
@@ -127,21 +127,21 @@ plot_b24_1 <- ggplot(b24_1, aes(x = Condition,
   scale_y_continuous(breaks= seq(0, range_y, breaks_y), 
                      limits = c(0, range_y)) +
   
-  geom_signif(comparisons = list(c(conditions[1], conditions[2])), 
+  geom_signif(comparisons = list(c(list_of_conditions[1], list_of_conditions[2])), 
               annotation = p_val[1], 
               y_position = 0.93*range_y - 2*(range_y*0.075), 
               tip_length = 0, 
               vjust= -0.2, 
               size = 0.7, 
               textsize = textsize_values[1]) +
-  geom_signif(comparisons = list(c(conditions[1], conditions[3])), 
+  geom_signif(comparisons = list(c(list_of_conditions[1], list_of_conditions[3])), 
               annotation = p_val[2], 
               y_position = 0.93*range_y - 1*(range_y*0.075), 
               tip_length = 0, 
               vjust= -0.2, 
               size = 0.7, 
               textsize = textsize_values[2]) +
-  geom_signif(comparisons = list(c(conditions[1], conditions[4])), 
+  geom_signif(comparisons = list(c(list_of_conditions[1], list_of_conditions[4])), 
               annotation = p_val[3], 
               y_position = 0.93*range_y - 0*(range_y*0.075), 
               tip_length = 0, 
