@@ -10,7 +10,14 @@ library(data.table)
 ###########
 
 # data prep ----
-standards_data <- drop_na(read.csv('Data/bovine_IFIT_standards.csv'))
+standards_data <- drop_na(read.csv(paste('Data/', 
+      
+                                         ############
+                                         'bRSV_data', 
+                                         ############
+
+                                         '.csv', 
+                                         sep = ''))
 
 scb2_2 <- standards_data %>%
   
