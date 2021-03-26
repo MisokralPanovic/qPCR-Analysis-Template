@@ -9,9 +9,9 @@ library(data.table)
 
 ###########
 list_of_conditions <- c('Mock',
-                'cbRSV dNS1 0.001-24',
-                'cbRSV dNS2 0.01-24',
-                'cbRSV dNS1/2 0.001-24')
+                        'cbRSV dNS1 0.001-24',
+                        'cbRSV dNS2 0.01-24',
+                        'cbRSV dNS1/2 0.001-24')
 list_of_colours <- c('#999999', 
                      '#ffc034', 
                      '#9a6a00', 
