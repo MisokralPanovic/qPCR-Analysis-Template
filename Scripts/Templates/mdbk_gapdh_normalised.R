@@ -19,7 +19,14 @@ list_of_colours <- c('#999999',
 ###########
 
 # data prep ----
-initial_data <- read.csv('Data/bIFIT_ct.csv')
+initial_data <- read.csv(paste('Data/', 
+      
+                               ############
+                               'bRSV_data', 
+                               ############
+
+                               '.csv', 
+                               sep = ''))
 
 b24_1 <- initial_data %>%
   
