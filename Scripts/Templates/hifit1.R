@@ -19,7 +19,14 @@ list_of_colours <- c('#999999',
 ###########
 
 # data prep ----
-initial_data <- drop_na(read.csv('Data/data_all.csv'))
+initial_data <- read.csv(paste('Data/', 
+      
+                               ############
+                               'bRSV_data', 
+                               ############
+
+                               '.csv', 
+                               sep = ''))
 
 hifit1 <- initial_data %>%
   
