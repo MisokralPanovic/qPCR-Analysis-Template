@@ -1,1 +1,24 @@
+Folder for: 
+
+  raw data files extracted from the qPCR machine 
+  Quantstidio (or any other qPCR machine file format) files from pre and post analysis
+  .xlsx files used for calculating log2 ddCt values
+ 
+File name:
+Explanation of special row values:
 ...
+
+...
+---------------------------------------------------------------
+File name:
+Explanation of special row values:
+...
+
+...
+---------------------------------------------------------------
+File name:
+Explanation of special row values:
+...
+
+...
+---------------------------------------------------------------
