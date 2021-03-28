@@ -1,4 +1,0 @@
-Guide to using ALA_qPCR_template_20191212:
-
-# use the 'master' tab where possible
-- 
