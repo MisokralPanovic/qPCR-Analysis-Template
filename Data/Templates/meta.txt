@@ -1,1 +1,70 @@
+Template .csv files. 
+
 ...
+Based on the final value to be used in the data analysis choose the appropriate table.
+
+If you have multiple control conditions for the same target, create a new column and separate them that way.
+
+Negative controls are just for informative purposes (for now).
+...
+
+Meaning of columns:
+
+Table: copy_number_extrapolation_data.csv
+...
+Copy_number:      Leave empty, will be extrapolated based on standard curve
+Ct:               Raw Ct values
+Target:           Name of the target gene
+                  Used for filtering purposes
+Condition:        Type of treatment eg. Mock, Infected
+                  THE NAME HERE WILL BE DISPALYED ON THE GRAPH
+Cell_line:        Name of the cell line
+                  Used for filtering purposes
+Additional_info:  Template column for additional filtering
+...
+------------------------------------------
+Table: ct_only_data.csv
+...
+Ct:               Raw Ct values
+Target:           Name of the target gene
+                  Used for filtering purposes
+Condition:        Type of treatment eg. Mock, Infected
+                  THE NAME HERE WILL BE DISPALYED ON THE GRAPH
+Cell_line:        Name of the cell line
+                  Used for filtering purposes
+Additional_info:  Template column for additional filtering
+...
+------------------------------------------
+Table: log2_ddCt_data.csv
+...
+Value:            log2 of delta delta Ct values (obtained elsewhere)
+                  Table template for log2 ddCt value extrapolation is in ~/Raw-Data/Templates/ANAL_qPCR_template_20191212.xlsx
+Target:           Name of the target gene
+                  Used for filtering purposes
+Condition:        Type of treatment eg. Mock, Infected
+                  THE NAME HERE WILL BE DISPALYED ON THE GRAPH
+Cell_line:        Name of the cell line
+                  Used for filtering purposes
+Additional_info:  Template column for additional filtering
+...
+------------------------------------------
+Table: negative_controls_data.csv
+...
+Ct:               Raw Ct values
+Target:           Name of the target gene
+                  Used for filtering purposes
+Condition:        Type of negative control eg. No_reverse_transcriptase or No_cDNA
+Additional_info:  Template column for additional filtering
+...
+------------------------------------------
+Table: 
+...
+Ct:               Raw Ct values
+Copy_number:      The amount of template plasmid used for standard curve
+Primer_set:       Primer set identifier
+Target:           Name of the target gene
+Experiment:       Identifier of experiment
+                  Useful for overall primer set amplification efficiency establishment across many experiments 
+Additional_info:  Template column for additional filtering
+...
+------------------------------------------
