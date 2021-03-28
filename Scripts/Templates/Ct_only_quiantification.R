@@ -86,7 +86,7 @@ p_val <- c(0.8031417,
            0.0564754)
 range_y <- 8
 plot_title <- 'MDBK - bRSV N'
-y_axis_title <- 'mRNA Fold Change'
+y_axis_title <- 'Relative mRNA Abundance'
 ###########
 
 textsize_values <- c()
