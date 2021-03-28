@@ -1,1 +1,4 @@
-...
+Default storage of ggplot plots.
+
+Data used for plotting is in ~/Adjusted-Data folder.
+Names are by convention identical to names in ~/Adjusted-Data folder. 
