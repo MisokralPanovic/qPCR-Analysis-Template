@@ -1,5 +1,7 @@
 .csv files with values used for the final graphs are stored here. The name of plot usually corresponds to the name of .cvs data table.
 
+Table family name:
+Original data table name:
 
 Explanation of new column names:
 ...
@@ -10,4 +12,17 @@ Explanation of new special column values:
 ...
 
 ...
+---------------------------------------------------------
+Table family name:
+Original data table name:
 
+Explanation of new column names:
+...
+
+...
+
+Explanation of new special column values:
+...
+
+...
+---------------------------------------------------------
