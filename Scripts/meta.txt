@@ -1,4 +1,4 @@
-Destination for data manipulation/statistical analysis/plotting scripts per analysis.
+Destination for data manipulation / statistical analysis / plotting scripts per analysis.
 
 Name:
 Data source:
