@@ -15,6 +15,7 @@ file_emmit <- c(T,T,T,
                 T,T,T,
                 T,T,T,
                 T,T,T)
+replicates <- 3
 ########################
 
 gapdh_data <- read.csv(paste('Data/', 
@@ -47,7 +48,7 @@ gapdh_data_condition1 <- gapdh_data_condition1 %>%
   arrange(match(Group.1, conditions))
 
 
-gapdh_ratios_condition1 <- rep(gapdh_data_condition1$Value_nor, each=3)
+gapdh_ratios_condition1 <- rep(gapdh_data_condition1$Value_nor, each=replicates)
 gapdh_ratios_mdbk <- gapdh_ratios_mdbk[file_emmit]
 
 # final vector
