@@ -1,1 +1,17 @@
-...
+INFORMATION ABOUT THE EXPERIMENT:
+
+Name:
+Date of qPCR:
+Date of analysis:
+Name of person:
+
+Experiment description:
+
+Cell lines used:
+
+Conditions:
+
+Target genes:
+
+Primers used:
+
