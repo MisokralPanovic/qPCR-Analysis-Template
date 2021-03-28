@@ -1,1 +1,41 @@
+.csv files with raw data is storted here.
+
+Table name:
+Original raw data table name:
+
+Explanation of column names:
 ...
+
+...
+
+Explanation of column values:
+...
+
+...
+--------------------------------------------------------
+Table name:
+Original raw data table name:
+
+Explanation of column names:
+...
+
+...
+
+Explanation of column values:
+...
+
+...
+--------------------------------------------------------
+Table name:
+Original raw data table name:
+
+Explanation of column names:
+...
+
+...
+
+Explanation of column values:
+...
+
+...
+--------------------------------------------------------
