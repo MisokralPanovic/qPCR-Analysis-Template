@@ -5,7 +5,6 @@ Based on the final value to be used in the data analysis choose the appropriate 
 
 If you have multiple control conditions for the same target, create a new column and separate them that way.
 
-Negative controls are just for informative purposes (for now).
 ...
 
 Meaning of columns:
@@ -48,16 +47,7 @@ Cell_line:        Name of the cell line
 Additional_info:  Template column for additional filtering
 ...
 ------------------------------------------
-Table: negative_controls_data.csv
-...
-Ct:               Raw Ct values
-Target:           Name of the target gene
-                  Used for filtering purposes
-Condition:        Type of negative control eg. No_reverse_transcriptase or No_cDNA
-Additional_info:  Template column for additional filtering
-...
-------------------------------------------
-Table: 
+Table: standard_curves_data.csv
 ...
 Ct:               Raw Ct values
 Copy_number:      The amount of template plasmid used for standard curve
