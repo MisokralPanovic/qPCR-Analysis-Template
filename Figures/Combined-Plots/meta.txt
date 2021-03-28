@@ -1,1 +1,23 @@
+Default storage place of combined plots. 
+
+Figure name:
+
+Description:
 ...
+
+...
+----------------------------------------------
+Figure name:
+
+Description:
+...
+
+...
+----------------------------------------------
+Figure name:
+
+Description:
+...
+
+...
+----------------------------------------------
