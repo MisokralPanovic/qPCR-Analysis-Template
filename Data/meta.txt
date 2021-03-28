@@ -1,14 +1,16 @@
 .csv files with raw data is storted here.
 
+The explanations for standard column names are in ~/Data/Templates/meta.txt
+
 Table name:
 Original raw data table name:
 
-Explanation of column names:
+Explanation of special column names:
 ...
 
 ...
 
-Explanation of column values:
+Explanation of special row values:
 ...
 
 ...
@@ -16,12 +18,12 @@ Explanation of column values:
 Table name:
 Original raw data table name:
 
-Explanation of column names:
+Explanation of special column names:
 ...
 
 ...
 
-Explanation of column values:
+Explanation of special row values:
 ...
 
 ...
@@ -29,12 +31,12 @@ Explanation of column values:
 Table name:
 Original raw data table name:
 
-Explanation of column names:
+Explanation of special column names:
 ...
 
 ...
 
-Explanation of column values:
+Explanation of special row values:
 ...
 
 ...
