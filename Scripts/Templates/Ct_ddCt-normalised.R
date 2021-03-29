@@ -62,7 +62,7 @@ hifit1 <- initial_data %>%
          
          mock_mean_log = mean(log2_ddct[Condition == list_of_conditions[1]],
                               na.rm = T),
-         fold_change_norm = log2_ddct / mock_mean_log)
+         Value_norm = log2_ddct / mock_mean_log)
 
 hifit1
 
