@@ -31,22 +31,21 @@ initial_data <- read.csv(paste('Data/',
 b24_1 <- initial_data %>%
   
   ###########
-  filter(TimePoint == 24) %>%
-  filter(Target == 'bIFIT1')
+  filter(TimePoint == 24,
+         Target == 'bIFIT1') %>%
   ###########
 
 b24_1 <- b24_1 %>%
   mutate(Copy_number = 10^predict(model_lmsc1, newdata = b24_1)) %>%
   arrange(match(Condition, list_of_conditions)) %>%
 
-    mutate(Factor = gapdh_ratios_24) %>%
-  mutate(Copy_number_mod = Copy_number / Factor) %>%
-  mutate(Mock_mean = mean(Copy_number_mod[Condition == list_of_conditions[1]],
+  mutate(Factor = gapdh_ratios_24,
+         Copy_number_mod = Copy_number / Factor,
+         Mock_mean = mean(Copy_number_mod[Condition == list_of_conditions[1]],
                           na.rm = T),
-         Value_norm = Copy_number_mod / Mock_mean) %>%
-  
-  mutate(Value_norm_old = Copy_number / Mock_mean)
-  
+         Value_norm = Copy_number_mod / Mock_mean,
+         Value_norm_old = Copy_number / Mock_mean)
+
 b24_1
 
 # data analysis ----
@@ -85,7 +84,7 @@ p_val <- c(0.8031417,
 range_y <- 2
 breaks_y <- 0.5
 plot_title <- 'bIFIT1 - 24h'
-y_axis_title <- 'mRNA Fold Change'
+y_axis_title <- 'Relative mRNA Levels'
 ###########
 
 textsize_values <- c()
@@ -168,9 +167,9 @@ height <- 20
 file_name <- 'b24_1'
 ###########
 
-ggsave(filename = paste(file_name, '.png', sep = ''), 
+ggsave(filename = paste(file_name, '.svg', sep = ''), 
        plot = plot_b24_1, 
-       device = 'png', 
+       device = 'svg', 
        path = 'Figures', 
        dpi = dpi, 
        height = height, 
