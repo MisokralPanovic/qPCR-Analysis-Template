@@ -34,14 +34,14 @@ all_RSV_N_data <- read.csv(paste('Data/',
 
 # all dataset normalisation - reverse values so mock low and infection high
 all_RSV_N_data <- all_RSV_N_data %>%
-  mutate(normalisator = 45) %>%
-  mutate(Value_adju = 2^abs(Ct - normalisator))
+  mutate(normalisator = 45,
+         Value_adju = 2^abs(Ct - normalisator))
 
 mdbk_bRSVN <- all_RSV_N_data %>%
   
   ###########
-  filter(CellLine == 'MDBK') %>%
-  filter(Target == 'bRSV_N') %>%
+  filter(CellLine == 'MDBK',
+         Target == 'bRSV_N') %>%
   ###########
   
   mutate(Mock_mean = mean(Value_adju[Condition == list_of_conditions[1]],
@@ -86,13 +86,13 @@ p_val <- c(0.8031417,
            0.0564754)
 range_y <- 8
 plot_title <- 'MDBK - bRSV N'
-y_axis_title <- 'Relative mRNA Abundance'
+y_axis_title <- 'Relative mRNA Levels'
 ###########
 
 textsize_values <- c()
 
 for (value in p_val) {
-  if (value > 0.05) {
+  if (value > 0.05) {p
     textsize_values <- append(textsize_values, 4)
   } else {
     textsize_values <- append(textsize_values, 5)
@@ -173,9 +173,9 @@ height <- 20
 file_name <- 'mdbk_bRSVN'
 ###########
 
-ggsave(filename = paste(file_name, '.png', sep = ''), 
+ggsave(filename = paste(file_name, '.svg', sep = ''), 
        plot = plot_mdbk_bRSVN, 
-       device = 'png', 
+       device = 'svg', 
        path = 'Figures', 
        dpi = dpi, 
        height = height, 
