@@ -39,9 +39,9 @@ mdbk_bi1 <- initial_data %>%
 
 mdbk_bi1 <- mdbk_bi1 %>%
   mutate(Copy_number = 10^predict(model_lmsc1, newdata = mdbk_bi1),
-         Mock_mean = mean(Value[Condition == list_of_conditions[1]],
+         Control_mean = mean(Value[Condition == list_of_conditions[1]],
                           na.rm = T),
-         Value_norm = Value / Mock_mean)
+         Value_norm = Value / Control_mean)
 
 mdbk_bi1
 
