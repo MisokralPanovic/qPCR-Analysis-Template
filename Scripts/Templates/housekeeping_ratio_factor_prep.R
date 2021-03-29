@@ -36,8 +36,8 @@ gapdh_data_condition1 <- gapdh_data %>%
   ########################
   
   # run the rest to get list of factor values
-  mutate(normalisator = 45) %>%
-  mutate(Value_adju = 2^abs(Value - normalisator))
+  mutate(normalisator = 45,
+         Value_adju = 2^abs(Ct - normalisator))
 
 gapdh_data_condition1 <- aggregate(gapdh_data_condition1[-1],
                            list(gapdh_data_condition1$Condition),
@@ -48,9 +48,8 @@ gapdh_data_condition1 <- gapdh_data_condition1 %>%
   arrange(match(Group.1, conditions))
 
 
-gapdh_ratios_condition1 <- rep(gapdh_data_condition1$Value_nor, each=replicates)
+gapdh_ratios_condition1 <- rep(gapdh_data_condition1$Value_norm, each=replicates)
 gapdh_ratios_mdbk <- gapdh_ratios_mdbk[file_emmit]
 
 # final vector
 gapdh_ratios_condition1
-
