@@ -10,4 +10,3 @@ Guide to using ANAL_qPCR_template_20191212:
 - Coulmns represent different treatment conditions
 - First one is always control
 
-- use '2^-()' row values for populating ~/Data/Templates/log2_ddCt_data.csv value column
