@@ -24,16 +24,16 @@ replicates <- 3
 ###########
 
 # data prep ----
-initial_data <- read.csv(paste('Data/', 
+gene_of_interest_data <- read.csv(paste('Data/', 
       
-                               ############
-                               'bRSV_data', 
-                               ############
+                                  ############
+                                  'bRSV_data', 
+                                  ############
 
-                               '.csv', 
-                               sep = ''))
+                                  '.csv', 
+                                  sep = ''))
 
-housekeeping_control <- initial_data %>% 
+housekeeping_control <- gene_of_interest_data %>% 
   
   ###########
   filter(Target == 'hGAPDH') %>%
@@ -90,7 +90,6 @@ bartlett.test(Value_norm~Condition, hifit1)
 library(userfriendlyscience)
 oneway.test(Value_norm~Condition, hifit1, var.equal = FALSE)
 oneway(hifit1$Value_norm, as.factor(hifit1$Condition), posthoc = 'games-howell')
-
 
 # plot data ----
 boxplot(Value_norm~Condition, hifit1)
@@ -174,9 +173,7 @@ plot_mdbk_bi1 <- ggplot(hifit1, aes(x = Condition,
               size = 0.7, 
               textsize = textsize_values[3])
 
-
 plot_hifit1
-
 
 # saving data and plot ------------------------------
 
