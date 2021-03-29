@@ -35,21 +35,22 @@ gapdh_data_condition1 <- gapdh_data %>%
   filter(Time == '24h') %>%
   ########################
   
-  # run the rest to get list of factor values
-  mutate(normalisator = 45,
-         Value_adju = 2^abs(Ct - normalisator))
+  mutate(control_mean = mean([Condition == list_of_conditions[1]],
+                             na.rm = T),
+         log2_dCt = 2^ (- (Ct - control_mean)),
+         control_mean_log = mean(log2_dCt[Condition == list_of_conditions[1]],
+                              na.rm = T),
+         Value_norm = log2_ddct / mock_mean_log)
+         
 
 gapdh_data_condition1 <- aggregate(gapdh_data_condition1[-1],
                            list(gapdh_data_condition1$Condition),
                            mean)
 gapdh_data_condition1 <- gapdh_data_condition1 %>%
-  mutate(Mock_mean = Value_adju[Group.1 == conditions[1]],
-         Value_norm = Value_adju / Mock_mean) %>%
   arrange(match(Group.1, conditions))
 
-
 gapdh_ratios_condition1 <- rep(gapdh_data_condition1$Value_norm, each=replicates)
-gapdh_ratios_mdbk <- gapdh_ratios_mdbk[file_emmit]
+gapdh_ratios_condition1 <- gapdh_ratios_condition1[file_emmit]
 
 # final vector
 gapdh_ratios_condition1
