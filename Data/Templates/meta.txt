@@ -36,7 +36,7 @@ Additional_info:  Template column for additional filtering
 ------------------------------------------
 Table: log2_ddCt_data.csv
 ...
-Value:            log2 of delta delta Ct values (obtained elsewhere)
+Ct:               Raw Ct values
                   Table template for log2 ddCt value extrapolation is in ~/Raw-Data/Templates/ANAL_qPCR_template_20191212.xlsx
 Target:           Name of the target gene
                   Used for filtering purposes
