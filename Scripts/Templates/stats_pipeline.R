@@ -56,7 +56,7 @@ oneway(a549_1$Value_norm,
        posthoc = 'games-howell')
 
 # for normal distribution but non equal variance single comparison
-t.test(Value_adju~Condition, 
+t.test(Value_norm~Condition, 
        data=a549_1, 
        alternative='two.sided',
        var.equal=F)
