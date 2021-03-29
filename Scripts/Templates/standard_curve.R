@@ -17,13 +17,13 @@ standards_data <- drop_na(read.csv(paste('Data/',
                                          ############
 
                                          '.csv', 
-                                         sep = ''))
+                                         sep = '')))
 
 scb2_2 <- standards_data %>%
   
   ###########
-  filter(Target == 'bIFIT2') %>%
-  filter(Primer_set == 'PS22')
+  filter(Target == 'bIFIT2',
+         Primer_set == 'PS22') %>%
   ###########
 
 scb2_2
@@ -35,10 +35,10 @@ plot(model_lmscb2_2)
 lm(Ct~log10(Copy_number), data = scb2_2)
 
 ###########
-rate <- 3.3
+rate_scb2_2 <- -3.3
 ###########
 
-efficiency_scb2_2 <- paste(round((10^(-1/ - rate ) -1)*100, 
+efficiency_scb2_2 <- paste(round((10^(-1/ rate_scb2_2 ) -1)*100, 
                                  digits = 2), 
                            '% Amplification Efficiency', 
                            sep = '')
@@ -120,9 +120,9 @@ height <- 10
 file_name <- 'scb2_2'
 ###########
 
-ggsave(filename = paste(file_name, '.png', sep = ''), 
+ggsave(filename = paste(file_name, '.svg', sep = ''), 
        plot = plot_scb2_2, 
-       device = 'png', 
+       device = 'svg', 
        path = 'Figures', 
        dpi = dpi, 
        height = height, 
