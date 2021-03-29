@@ -16,6 +16,11 @@ list_of_colours <- c('#999999',
                      '#ffc034', 
                      '#9a6a00', 
                      '#009e73')
+file_emmit <- c(T,T,T,
+                T,T,T,
+                T,T,T,
+                T,T,T)
+replicates <- 3
 ###########
 
 # data prep ----
@@ -28,17 +33,36 @@ initial_data <- read.csv(paste('Data/',
                                '.csv', 
                                sep = ''))
 
+housekeeping_control <- initial_data %>% 
+  
+  ###########
+  filter(Target == 'hGAPDH') %>%
+  ###########
+
+housekeeping_control <- aggregate(housekeeping_control[1],
+                                  list(housekeeping_control$Condition),
+                                  mean)
+housekeeping_control <- rep(housekeeping_control$Ct, each=replicates)
+housekeeping_control_vector <- housekeeping_control[file_emmit]
+
 hifit1 <- initial_data %>%
   
   ###########
-  filter(Target == 'hIFIT1') %>%
-  filter(CellLine == 'A549') %>%
+  filter(Target == 'hIFIT1',
+         CellLine == 'A549') %>%
   ###########
 
   arrange(match(Condition, list_of_conditions)) %>%
-  mutate(Mock_mean = mean(Value[Condition == list_of_conditions[1]],
-                          na.rm = T),
-         Value_norm = Value / Mock_mean)
+  mutate(Control_ct_mean = housekeeping_control_vector,
+         dCt = Ct - Control_ct_mean,
+         Control_dct_mean = mean(dCt[Condition == list_of_conditions[1]],
+                                 na.rm = T),
+         ddCt = dCt - Control_dct_mean,
+         log2_ddct = 2^ (- ddCt),
+         
+         mock_mean_log = mean(log2_ddct[Condition == list_of_conditions[1]],
+                              na.rm = T),
+         fold_change_norm = log2_ddct / mock_mean_log)
 
 hifit1
 
@@ -79,7 +103,7 @@ p_val <- c(0.8031417,
 range_y <- 20
 breaks_y <- 5
 plot_title <- 'A549 - hIFIT1'
-y_axis_title <- 'mRNA Fold Change'
+y_axis_title <- 'Relative mRNA Levels'
 ###########
 
 textsize_values <- c()
@@ -163,9 +187,9 @@ height <- 20
 file_name <- 'A549_hIFIT1'
 ###########
 
-ggsave(filename = paste(file_name, '.png', sep = ''), 
+ggsave(filename = paste(file_name, '.svg', sep = ''), 
        plot = plot_hifit1, 
-       device = 'png', 
+       device = 'svg', 
        path = 'Figures', 
        dpi = dpi, 
        height = height, 
