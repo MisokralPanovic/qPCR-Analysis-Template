@@ -1,6 +1,48 @@
 .csv files with values used for the final graphs are stored here. 
 The name of plot usually corresponds to the name of .cvs data table.
 
+### Common values per pipeline ### 
+
+Pipeline name:      Ct_ddCt-normalised.R
+...
+Control_ct_mean:    Mean Ct values of housekeeping gene, per condition
+dCt:                Difference between Ct values of target gene and mean of housekeeping gene
+Control_dct_mean:   Mean dCt values of control condition
+ddCt:               Difference between dCt values and mean dCt values from control condition
+log2_ddct:          2^-ddCt (relative abundance value)
+mock_mean_log:      Average control condition relative abundance value
+Value_norm:         Relative abundance value normalised to levels in control condition
+...
+
+Pipeline name:      copy_number_gapdh_factorised.R
+...
+Copy_number:        Copy number extrapolated from a standard curve
+Factor:             Ratios of conditions to control condition
+Copy_number_mod:    Extrapolated copy number multiplied by the housekeeping gene ration factor
+Control_mean:       Average control condition copy number value
+Value_norm:         Relative abundance value normalised to levels in control condition
+                    Adjusted by the levels of housekeeping control between conditions
+Value_norm_old:     Relative abundance value normalised to levels in control condition
+                    Without housekeeping gene normalisation
+...
+
+Pipeline name:      copy_number_quantification.R
+...
+Copy_number:        Copy number extrapolated from a standard curve
+Control_mean:       Average control condition copy number value
+Value_norm:         Relative abundance value normalised to levels in control condition
+...
+
+Pipeline name:      Ct_only_quiantification.R
+...
+control_mean_ct:    Mean Ct value of control condition
+log2_dCt:           2^-dCt (relative abundance value)
+control_mean_log:   Mean 2^-dCt value of control condition
+Value_norm:         Relative abundance value normalised to levels in control condition
+...
+-----------------------------------
+### Special custom values ### 
+
 Table family name:
 Original data table name:
 
