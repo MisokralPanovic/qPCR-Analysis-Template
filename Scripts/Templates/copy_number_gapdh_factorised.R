@@ -76,10 +76,10 @@ b24_1 <- b24_1 %>%
 
   mutate(Factor = housekeeping_factor_vector,
          Copy_number_mod = Copy_number / Factor,
-         Mock_mean = mean(Copy_number_mod[Condition == list_of_conditions[1]],
+         Control_mean = mean(Copy_number_mod[Condition == list_of_conditions[1]],
                           na.rm = T),
-         Value_norm = Copy_number_mod / Mock_mean,
-         Value_norm_old = Copy_number / Mock_mean)
+         Value_norm = Copy_number_mod / Control_mean,
+         Value_norm_old = Copy_number / Control_mean)
 
 b24_1
 
