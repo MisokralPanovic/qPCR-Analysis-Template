@@ -23,7 +23,7 @@ list_of_colours <- c('#999999',
 ###########
 
 # data prep -------------------------
-all_RSV_N_data <- read.csv(paste('Data/', 
+initial_ct_data <- read.csv(paste('Data/', 
       
                                  ############
                                  'bRSV_data', 
@@ -33,22 +33,20 @@ all_RSV_N_data <- read.csv(paste('Data/',
                                  sep = ''))
 
 # all dataset normalisation - reverse values so mock low and infection high
-all_RSV_N_data <- all_RSV_N_data %>%
-  mutate(normalisator = 45,
-         Value_adju = 2^abs(Ct - normalisator))
-
-mdbk_bRSVN <- all_RSV_N_data %>%
+mdbk_bRSVN <- initial_ct_data %>%
   
   ###########
   filter(CellLine == 'MDBK',
          Target == 'bRSV_N') %>%
   ###########
-  
-  mutate(Mock_mean = mean(Value_adju[Condition == list_of_conditions[1]],
+
+  arrange(match(Condition, list_of_conditions)) %>%
+  mutate(control_mean_ct = mean(Ct[Condition == list_of_conditions[1]],
                           na.rm = T),
-         Value_norm = Value_adju / Mock_mean) %>% 
-  
-  arrange(match(Condition, list_of_conditions))
+         log2_dCt = 2^ (- (Ct - mock_mean_ct)),
+         control_mean_log = mean(log2_dCt[Condition == list_of_conditions[1]],
+                              na.rm = T),
+         Value_norm = log2_ddct / control_mean_log)
 
 mdbk_bRSVN
 
