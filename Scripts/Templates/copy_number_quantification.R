@@ -31,15 +31,15 @@ initial_data <- read.csv(paste('Data/',
 mdbk_bi1 <- initial_data %>%
   
   ###########
-  filter(CellLine == 'MDBK') %>%
-  filter(Target == 'bIFIT1') %>% 
+  filter(CellLine == 'MDBK',
+         Target == 'bIFIT1') %>%
   ###########
 
   arrange(match(Condition, list_of_conditions))
 
 mdbk_bi1 <- mdbk_bi1 %>%
-  mutate(Copy_number = 10^predict(model_lmsc1, newdata = mdbk_bi1)) %>%
-  mutate(Mock_mean = mean(Value[Condition == list_of_conditions[1]],
+  mutate(Copy_number = 10^predict(model_lmsc1, newdata = mdbk_bi1),
+         Mock_mean = mean(Value[Condition == list_of_conditions[1]],
                           na.rm = T),
          Value_norm = Value / Mock_mean)
 
@@ -83,7 +83,7 @@ p_val <- c(0.8031417,
 range_y <- 100
 breaks_y <- 20
 plot_title <- 'bIFIT1 - MDBK'
-y_axis_title <- 'mRNA Fold Change'
+y_axis_title <- 'Relative mRNA Levels'
 ###########
 
 textsize_values <- c()
@@ -166,9 +166,9 @@ height <- 20
 file_name <- 'mdbk_bi1'
 ###########
 
-ggsave(filename = paste(file_name, '.png', sep = ''), 
+ggsave(filename = paste(file_name, '.svg', sep = ''), 
        plot = plot_mdbk_bi1, 
-       device = 'png', 
+       device = 'svg', 
        path = 'Figures', 
        dpi = dpi, 
        height = height, 
