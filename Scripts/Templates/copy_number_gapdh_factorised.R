@@ -16,10 +16,15 @@ list_of_colours <- c('#999999',
                      '#ffc034', 
                      '#9a6a00', 
                      '#009e73')
+file_emmit <- c(T,T,T,
+                T,T,T,
+                T,T,T,
+                T,T,T)
+replicates <- 3
 ###########
 
 # data prep ----
-initial_data <- read.csv(paste('Data/', 
+gene_of_interest_data <- read.csv(paste('Data/', 
       
                                ############
                                'bRSV_data', 
@@ -27,8 +32,38 @@ initial_data <- read.csv(paste('Data/',
 
                                '.csv', 
                                sep = ''))
+housekeeping_gene_data <- read.csv(paste('Data/', 
+      
+                                   ############
+                                   'bRSV_gapdh_data', 
+                                   ############
 
-b24_1 <- initial_data %>%
+                                   '.csv', 
+                                   sep = ''))
+housekeeping_gene_data <- housekeeping_gene_data %>%
+  
+  ########################
+  filter(Time == '24h') %>%
+  ########################
+  
+  mutate(control_mean = mean([Condition == list_of_conditions[1]],
+                             na.rm = T),
+         log2_dCt = 2^ (- (Ct - control_mean)),
+         control_mean_log = mean(log2_dCt[Condition == list_of_conditions[1]],
+                              na.rm = T),
+         Value_norm = log2_ddct / mock_mean_log)
+         
+
+housekeeping_gene_data <- aggregate(housekeeping_gene_data[-1],
+                           list(housekeeping_gene_data$Condition),
+                           mean)
+housekeeping_gene_data <- housekeeping_gene_data %>%
+  arrange(match(Group.1, conditions))
+
+housekeeping_factor_vector <- rep(housekeeping_gene_data$Value_norm, each=replicates)
+housekeeping_factor_vector <- housekeeping_factor_vector[file_emmit]
+
+b24_1 <- gene_of_interest_data %>%
   
   ###########
   filter(TimePoint == 24,
@@ -39,7 +74,7 @@ b24_1 <- b24_1 %>%
   mutate(Copy_number = 10^predict(model_lmsc1, newdata = b24_1)) %>%
   arrange(match(Condition, list_of_conditions)) %>%
 
-  mutate(Factor = gapdh_ratios_24,
+  mutate(Factor = housekeeping_factor_vector,
          Copy_number_mod = Copy_number / Factor,
          Mock_mean = mean(Copy_number_mod[Condition == list_of_conditions[1]],
                           na.rm = T),
