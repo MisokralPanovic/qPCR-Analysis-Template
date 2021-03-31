@@ -1,4 +1,4 @@
-.libPaths('C:/r_packages')
+# .libPaths('C:/r_packages')
 library(tidyverse)
 library(ggsignif)
 library(data.table)
@@ -179,7 +179,15 @@ ggsave(filename = paste(file_name, '.svg', sep = ''),
        height = height, 
        width = width, 
        units = 'cm')
-
+ggsave(filename = paste(file_name, '.png', sep = ''), 
+       plot = plot_mdbk_bRSVN, 
+       device = 'png', 
+       path = 'Figures', 
+       dpi = dpi, 
+       height = height, 
+       width = width, 
+       units = 'cm')
+                
 fwrite(mdbk_bRSVN, 
        paste('Adjusted-Data/', 
              file_name, 
