@@ -2,7 +2,6 @@
 library(tidyverse)
 library(ggplot2)
 library(scales)
-library(data.table)
 
 ###########
 # change 'bIFIT2', 'PS22' and 'scb2_2'
@@ -110,7 +109,7 @@ plot_scb2_2 <- ggplot(data = data.combined.predict_scb2_2,
 
 plot_scb2_2
 
-# saving data and plot ------------------------------
+# saving plot ------------------------------
 
 ###########
 dpi <- 600
@@ -135,9 +134,3 @@ ggsave(filename = paste(file_name, '.png', sep = ''),
        height = height, 
        width = width, 
        units = 'cm')
-                
-fwrite(scb2_2, 
-       paste('Adjusted-Data/', 
-             file_name, 
-             '.csv', 
-             sep = ''))
