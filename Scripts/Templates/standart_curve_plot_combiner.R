@@ -1,4 +1,4 @@
-.libPaths('C:/r_packages')
+# .libPaths('C:/r_packages')
 library(tidyverse)
 library(ggpubr)
 
@@ -23,6 +23,14 @@ combined_plot_x
 ggsave(filename = paste(file_name, '.svg', sep = ''),
        plot = combined_plot, 
        device = 'svg', 
+       path = 'Figures/Combined-Plots', 
+       dpi = dpi, 
+       height = height, 
+       width = width, 
+       units = 'cm')
+ggsave(filename = paste(file_name, '.png', sep = ''),
+       plot = combined_plot, 
+       device = 'png', 
        path = 'Figures/Combined-Plots', 
        dpi = dpi, 
        height = height, 
