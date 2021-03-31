@@ -128,7 +128,15 @@ ggsave(filename = paste(file_name, '.svg', sep = ''),
        height = height, 
        width = width, 
        units = 'cm')
-
+ggsave(filename = paste(file_name, '.png', sep = ''), 
+       plot = plot_scb2_2, 
+       device = 'png', 
+       path = 'Figures', 
+       dpi = dpi, 
+       height = height, 
+       width = width, 
+       units = 'cm')
+                
 fwrite(scb2_2, 
        paste('Adjusted-Data/', 
              file_name, 
