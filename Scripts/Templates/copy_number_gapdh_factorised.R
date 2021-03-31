@@ -46,7 +46,7 @@ housekeeping_gene_data <- housekeeping_gene_data %>%
   filter(Time == '24h') %>%
   ########################
   
-  mutate(control_mean = mean([Condition == list_of_conditions[1]],
+  mutate(control_mean = mean(Ct[Condition == list_of_conditions[1]],
                              na.rm = T),
          log2_dCt = 2^ (- (Ct - control_mean)),
          control_mean_log = mean(log2_dCt[Condition == list_of_conditions[1]],
