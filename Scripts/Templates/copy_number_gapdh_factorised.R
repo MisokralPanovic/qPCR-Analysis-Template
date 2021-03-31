@@ -4,7 +4,7 @@ library(ggsignif)
 library(data.table)
 
 ###########
-# change 'b24_1', 'MDBK', 'bIFIT1', 'model_lmsc1', 'gapdh_ratios_24'
+# change 'b24_1', 'MDBK', 'bIFIT1', 'model_lmsc1',
 ###########
 
 ###########
@@ -27,7 +27,7 @@ replicates <- 3
 gene_of_interest_data <- read.csv(paste('Data/', 
       
                                ############
-                               'bRSV_data', 
+                               'copy_number_extrapolation_data', 
                                ############
 
                                '.csv', 
@@ -35,7 +35,7 @@ gene_of_interest_data <- read.csv(paste('Data/',
 housekeeping_gene_data <- read.csv(paste('Data/', 
       
                                    ############
-                                   'bRSV_gapdh_data', 
+                                   'ct_data', 
                                    ############
 
                                    '.csv', 
