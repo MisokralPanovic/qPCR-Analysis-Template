@@ -27,7 +27,7 @@ replicates <- 3
 gene_of_interest_data <- read.csv(paste('Data/', 
       
                                   ############
-                                  'bRSV_data', 
+                                  'ct_data', 
                                   ############
 
                                   '.csv', 
