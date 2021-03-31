@@ -51,14 +51,14 @@ housekeeping_gene_data <- housekeeping_gene_data %>%
          log2_dCt = 2^ (- (Ct - control_mean)),
          control_mean_log = mean(log2_dCt[Condition == list_of_conditions[1]],
                               na.rm = T),
-         Value_norm = log2_ddct / mock_mean_log)
+         Value_norm = log2_dCt / control_mean_log)
          
 
 housekeeping_gene_data <- aggregate(housekeeping_gene_data[-1],
                            list(housekeeping_gene_data$Condition),
                            mean)
 housekeeping_gene_data <- housekeeping_gene_data %>%
-  arrange(match(Group.1, conditions))
+  arrange(match(Group.1, list_of_conditions))
 
 housekeeping_factor_vector <- rep(housekeeping_gene_data$Value_norm, each=replicates)
 housekeeping_factor_vector <- housekeeping_factor_vector[file_emmit]
