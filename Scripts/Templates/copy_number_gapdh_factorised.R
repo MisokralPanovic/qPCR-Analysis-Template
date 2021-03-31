@@ -67,7 +67,7 @@ b24_1 <- gene_of_interest_data %>%
   
   ###########
   filter(TimePoint == 24,
-         Target == 'bIFIT1') %>%
+         Target == 'bIFIT1')
   ###########
 
 b24_1 <- b24_1 %>%
