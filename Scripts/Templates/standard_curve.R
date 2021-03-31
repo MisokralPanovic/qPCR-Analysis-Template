@@ -1,4 +1,3 @@
-# library loader ----
 # .libPaths('C:/r_packages')
 library(tidyverse)
 library(ggplot2)
