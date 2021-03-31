@@ -1,4 +1,4 @@
-.libPaths('C:/r_packages')
+# .libPaths('C:/r_packages')
 library(tidyverse)
 library(ggsignif)
 library(data.table)
@@ -205,6 +205,14 @@ file_name <- 'b24_1'
 ggsave(filename = paste(file_name, '.svg', sep = ''), 
        plot = plot_b24_1, 
        device = 'svg', 
+       path = 'Figures', 
+       dpi = dpi, 
+       height = height, 
+       width = width, 
+       units = 'cm')
+ggsave(filename = paste(file_name, '.png', sep = ''), 
+       plot = plot_b24_1, 
+       device = 'png', 
        path = 'Figures', 
        dpi = dpi, 
        height = height, 
