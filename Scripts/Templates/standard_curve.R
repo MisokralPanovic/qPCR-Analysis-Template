@@ -1,5 +1,5 @@
 # library loader ----
-.libPaths('C:/r_packages')
+# .libPaths('C:/r_packages')
 library(tidyverse)
 library(ggplot2)
 library(scales)
@@ -10,20 +10,20 @@ library(data.table)
 ###########
 
 # data prep ----
-standards_data <- drop_na(read.csv(paste('Data/', 
+standards_data <- read.csv(paste('Data/', 
       
-                                         ############
-                                         'standard_curves_data', 
-                                         ############
+                                  ############
+                                  'standard_curves_data', 
+                                  ############
 
-                                         '.csv', 
-                                         sep = '')))
+                                  '.csv', 
+                                   sep = ''))
 
 scb2_2 <- standards_data %>%
   
   ###########
   filter(Target == 'bIFIT2',
-         Primer_set == 'PS22') %>%
+         Primer_set == 'PS22')
   ###########
 
 scb2_2
