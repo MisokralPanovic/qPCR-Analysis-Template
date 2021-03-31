@@ -21,7 +21,7 @@ combined_plot_x <- ggarrange(plot_standard1, plot_standard2, plot_standard3, plo
 combined_plot_x
 
 ggsave(filename = paste(file_name, '.svg', sep = ''),
-       plot = combined_plot, 
+       plot = combined_plot_x, 
        device = 'svg', 
        path = 'Figures/Combined-Plots', 
        dpi = dpi, 
@@ -29,7 +29,7 @@ ggsave(filename = paste(file_name, '.svg', sep = ''),
        width = width, 
        units = 'cm')
 ggsave(filename = paste(file_name, '.png', sep = ''),
-       plot = combined_plot, 
+       plot = combined_plot_x, 
        device = 'png', 
        path = 'Figures/Combined-Plots', 
        dpi = dpi, 
