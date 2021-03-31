@@ -13,7 +13,7 @@ library(data.table)
 standards_data <- drop_na(read.csv(paste('Data/', 
       
                                          ############
-                                         'bRSV_data', 
+                                         'standard_curves_data', 
                                          ############
 
                                          '.csv', 
