@@ -22,7 +22,7 @@ list_of_colours <- c('#999999',
 initial_data <- read.csv(paste('Data/', 
       
                                ############
-                               'bRSV_data', 
+                               'copy_number_extrapolation_data', 
                                ############
 
                                '.csv', 
