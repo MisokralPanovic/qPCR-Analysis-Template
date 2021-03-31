@@ -3,6 +3,7 @@
 The explanations for standard column names are in ~/Data/Templates/meta.txt
 
 Table name:
+
 Original raw data table name:
 
 Explanation of special column names:
@@ -16,6 +17,7 @@ Explanation of special row values:
 ...
 --------------------------------------------------------
 Table name:
+
 Original raw data table name:
 
 Explanation of special column names:
@@ -29,6 +31,7 @@ Explanation of special row values:
 ...
 --------------------------------------------------------
 Table name:
+
 Original raw data table name:
 
 Explanation of special column names:
