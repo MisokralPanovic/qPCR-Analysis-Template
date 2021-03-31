@@ -192,6 +192,14 @@ ggsave(filename = paste(file_name, '.svg', sep = ''),
        height = height, 
        width = width, 
        units = 'cm')
+ggsave(filename = paste(file_name, '.png', sep = ''), 
+       plot = plot_hifit1, 
+       device = 'png', 
+       path = 'Figures', 
+       dpi = dpi, 
+       height = height, 
+       width = width, 
+       units = 'cm')
 
 fwrite(hifit1, 
        paste('Adjusted-Data/', 
