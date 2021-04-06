@@ -118,7 +118,18 @@ for (value in p_val) {
 plot_mdbk_bi1 <- ggplot(hifit1, aes(x = Condition, 
                                     y = Value_norm, 
                                     fill = Condition)) +
-  geom_boxplot(varwidth = T) +
+  geom_violin(trim=FALSE,
+              alpha = 0.5) +
+  geom_dotplot(binaxis='y', 
+               stackdir='center', 
+               dotsize=0.8,
+               show.legend = F,
+               binwidth = 0.068) +
+  stat_summary(fun.data=mean_se, 
+               fun.args = list(mult=1), 
+               geom="pointrange", 
+               color="black",
+               show.legend = F) +
   scale_x_discrete(limits = list_of_conditions) +
   scale_fill_manual(breaks = list_of_conditions,
                     values = list_of_colours) +
