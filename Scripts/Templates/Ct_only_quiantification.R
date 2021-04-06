@@ -101,7 +101,9 @@ plot_mdbk_bRSVN <- ggplot(mdbk_bRSVN, aes(x = Condition,
                                           y =Value_norm, 
                                           fill = Condition)) +
   geom_violin(trim=FALSE,
-              alpha = 0.5) +
+              alpha = 0.5,
+              scale = 'width',
+              adjust = 0.7) +
   stat_summary(fun.data=mean_se, 
                fun.args = list(mult=1), 
                geom="pointrange", 
