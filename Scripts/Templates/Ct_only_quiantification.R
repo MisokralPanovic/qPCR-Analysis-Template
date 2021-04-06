@@ -102,11 +102,6 @@ plot_mdbk_bRSVN <- ggplot(mdbk_bRSVN, aes(x = Condition,
                                           fill = Condition)) +
   geom_violin(trim=FALSE,
               alpha = 0.5) +
-  geom_dotplot(binaxis='y', 
-               stackdir='center', 
-               dotsize=0.8,
-               show.legend = F,
-               binwidth = 0.068) +
   stat_summary(fun.data=mean_se, 
                fun.args = list(mult=1), 
                geom="pointrange", 
