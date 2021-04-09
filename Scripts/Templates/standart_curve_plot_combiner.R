@@ -14,7 +14,7 @@ file_name <- 'standard_curves'
 ##########
 
 combined_plot_x <- ggarrange(plot_standard1, plot_standard2, plot_standard3, plot_standard5, # what to plot
-                             labels = c('A', 'B', 'C', 'D'), # labels
+                             labels = 'auto', # labels
                              ncol = 2, nrow = 2, # dimension of new plot
                              common.legend = T, legend = "bottom") # shared legend and legend position
 
