@@ -96,6 +96,7 @@ t.test(Value_norm~Condition,
 boxplot(Value_norm~Condition, 
         mdbk_bRSVN)
 mdbk_bRSVN
+list_of_conditions
 
 ###########
 p_val <- c(

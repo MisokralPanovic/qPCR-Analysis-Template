@@ -123,6 +123,7 @@ oneway(hifit1$Value_norm,
 # plot data ----
 boxplot(Value_norm~Condition, hifit1)
 hifit1
+list_of_conditions
 
 ###########
 p_val <- c(

@@ -147,6 +147,7 @@ TukeyHSD(aov(Value_norm~Condition, b24_1))
 # plot data ----
 boxplot(Value_norm~Condition, b24_1)
 b24_1
+list_of_conditions
 
 ###########
 p_val <- c(

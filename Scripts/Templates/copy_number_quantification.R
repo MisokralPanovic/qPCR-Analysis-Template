@@ -90,6 +90,7 @@ TukeyHSD(aov(Value_norm~Condition, mdbk_bi1))
 # plot data ----
 boxplot(Value_norm~Condition, mdbk_bi1)
 mdbk_bi1
+list_of_conditions
 
 ###########
 p_val <- c(
