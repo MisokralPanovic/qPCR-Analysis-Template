@@ -36,7 +36,8 @@ gene_of_interest_data <- read.csv(paste('Data/',
 housekeeping_control <- gene_of_interest_data %>% 
   
   ###########
-  filter(Target == 'hGAPDH') %>%
+  filter(Target == 'hGAPDH',
+         Condition %in% list_of_conditions)
   ###########
 
 housekeeping_control <- aggregate(housekeeping_control[1],
@@ -45,7 +46,7 @@ housekeeping_control <- aggregate(housekeeping_control[1],
 housekeeping_control <- rep(housekeeping_control$Ct, each=replicates)
 housekeeping_control_vector <- housekeeping_control[file_emmit]
 
-hifit1 <- initial_data %>%
+hifit1 <- gene_of_interest_data %>%
   
   ###########
   filter(Target == 'hIFIT1',
