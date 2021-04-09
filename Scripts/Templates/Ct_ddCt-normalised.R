@@ -62,7 +62,8 @@ hifit1 <- gene_of_interest_data %>%
   ###########
   filter(
     Target == 'hIFIT1',
-    CellLine == 'A549'
+    CellLine == 'A549',
+    Condition %in% list_of_conditions
          ) %>%
   ###########
 

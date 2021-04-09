@@ -38,7 +38,8 @@ mdbk_bi1 <- initial_data %>%
   
   ###########
   filter(CellLine == 'MDBK',
-         Target == 'bIFIT1'
+         Target == 'bIFIT1',
+         Condition %in% list_of_conditions
          ) %>%
   ###########
 

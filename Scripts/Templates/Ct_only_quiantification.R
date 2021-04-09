@@ -43,7 +43,8 @@ mdbk_bRSVN <- initial_ct_data %>%
   
   ###########
   filter(CellLine == 'MDBK',
-         Target == 'bRSV_N'
+         Target == 'bRSV_N',
+         Condition %in% list_of_conditions
          ) %>%
   ###########
 

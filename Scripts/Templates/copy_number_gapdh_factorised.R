@@ -57,7 +57,9 @@ housekeeping_gene_data <- read.csv(
 housekeeping_gene_data <- housekeeping_gene_data %>%
   
   ########################
-  filter(Time == '24h') %>%
+  filter(Time == '24h',
+         Condition %in% list_of_conditions
+         ) %>%
   ########################
   
   mutate(
@@ -90,7 +92,8 @@ b24_1 <- gene_of_interest_data %>%
   
   ###########
   filter(TimePoint == 24,
-         Target == 'bIFIT1'
+         Target == 'bIFIT1',
+         Condition %in% list_of_conditions
          )
   ###########
 
