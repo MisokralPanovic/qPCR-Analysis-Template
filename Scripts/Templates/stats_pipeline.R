@@ -1,4 +1,4 @@
-.libPaths('C:/r_packages')
+# .libPaths('C:/r_packages')
 
 #########
 # change 'a549_1',
@@ -47,13 +47,12 @@ t.test(Value_norm~Condition,
        var.equal=T)
 
 # for normal distribution but non equal variance - multiple comparison
-library(userfriendlyscience)
+library(rstatix)
+library(dplyr)
 oneway.test(Value_norm~Condition, 
             a549_1, 
             var.equal = F)
-oneway(a549_1$Value_norm, 
-       as.factor(a549_1$Condition), 
-       posthoc = 'games-howell')
+a549_1 %>% games_howell_test(Value_norm~Condition)
 
 # for normal distribution but non equal variance single comparison
 t.test(Value_norm~Condition, 
