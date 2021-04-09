@@ -14,10 +14,12 @@ file_name <- 'human_plots'
 ##########
 
 
-combined_plot_x <- ggarrange(plot_a549_1, plot_a549_2, plot_a549_3, plot_a549_5, # what to plot
-                             labels = 'auto', # labels
-                             ncol = 4, nrow = 1, # dimension of new plot
-                             common.legend = T, legend = "bottom") # shared legend and legend position
+combined_plot_x <- ggarrange(
+        plot_a549_1, plot_a549_2, plot_a549_3, plot_a549_5, # what to plot
+        labels = 'auto',                                    # labels
+        ncol = 4, nrow = 1,                                 # dimension of new plot
+        common.legend = T, legend = "bottom"                # shared legend and legend position
+        ) 
 
 combined_plot_x
 
