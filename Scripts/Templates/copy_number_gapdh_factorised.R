@@ -8,78 +8,111 @@ library(data.table)
 ###########
 
 ###########
-list_of_conditions <- c('Mock',
-                        'cbRSV dNS1 0.001-24',
-                        'cbRSV dNS2 0.01-24',
-                        'cbRSV dNS1/2 0.001-24')
-list_of_colours <- c('#999999', 
-                     '#ffc034', 
-                     '#9a6a00', 
-                     '#009e73')
-file_emmit <- c(T,T,T,
-                T,T,T,
-                T,T,T,
-                T,T,T)
+list_of_conditions <- c(
+  'Mock',
+  'cbRSV dNS1 0.001-24',
+  'cbRSV dNS2 0.01-24',
+  'cbRSV dNS1/2 0.001-24'
+  )
+list_of_colours <- c(
+  '#999999', 
+  '#ffc034', 
+  '#9a6a00', 
+  '#009e73'
+  )
+file_emmit <- c(
+  T,T,T,
+  T,T,T,
+  T,T,T,
+  T,T,T
+  )
 replicates <- 3
 ###########
 
 # data prep ----
-gene_of_interest_data <- read.csv(paste('Data/', 
-      
-                               ############
-                               'copy_number_extrapolation_data', 
-                               ############
+gene_of_interest_data <- read.csv(
+  paste('Data/', 
+        
+        ############
+        'copy_number_extrapolation_data', 
+        ############
+        
+        '.csv', 
+        sep = ''
+        )
+  )
 
-                               '.csv', 
-                               sep = ''))
-housekeeping_gene_data <- read.csv(paste('Data/', 
+housekeeping_gene_data <- read.csv(
+  paste('Data/', 
+        ############
+        'ct_data', 
+        ############
+        
+        '.csv', 
+        sep = ''
+        )
+  )
       
-                                   ############
-                                   'ct_data', 
-                                   ############
-
-                                   '.csv', 
-                                   sep = ''))
+                                   
 housekeeping_gene_data <- housekeeping_gene_data %>%
   
   ########################
   filter(Time == '24h') %>%
   ########################
   
-  mutate(control_mean = mean(Ct[Condition == list_of_conditions[1]],
-                             na.rm = T),
-         log2_dCt = 2^ (- (Ct - control_mean)),
-         control_mean_log = mean(log2_dCt[Condition == list_of_conditions[1]],
-                              na.rm = T),
-         Value_norm = log2_dCt / control_mean_log)
+  mutate(
+    control_mean = mean(
+       Ct[Condition == list_of_conditions[1]],
+       na.rm = T),
+    log2_dCt = 2^ (- (Ct - control_mean)),
+    control_mean_log = mean(
+      log2_dCt[Condition == list_of_conditions[1]],
+      na.rm = T),
+    Value_norm = log2_dCt / control_mean_log
+    )
          
-
-housekeeping_gene_data <- aggregate(housekeeping_gene_data[-1],
-                           list(housekeeping_gene_data$Condition),
-                           mean)
+housekeeping_gene_data <- aggregate(
+  housekeeping_gene_data[-1],
+  list(housekeeping_gene_data$Condition),
+  mean
+  )
 housekeeping_gene_data <- housekeeping_gene_data %>%
-  arrange(match(Group.1, list_of_conditions))
+  arrange(match(
+    Group.1, list_of_conditions)
+    )
 
-housekeeping_factor_vector <- rep(housekeeping_gene_data$Value_norm, each=replicates)
+housekeeping_factor_vector <- rep(
+  housekeeping_gene_data$Value_norm, each=replicates
+  )
 housekeeping_factor_vector <- housekeeping_factor_vector[file_emmit]
 
 b24_1 <- gene_of_interest_data %>%
   
   ###########
   filter(TimePoint == 24,
-         Target == 'bIFIT1')
+         Target == 'bIFIT1'
+         )
   ###########
 
 b24_1 <- b24_1 %>%
-  mutate(Copy_number = 10^predict(model_lmsc1, newdata = b24_1)) %>%
-  arrange(match(Condition, list_of_conditions)) %>%
+  mutate(
+    Copy_number = 10^predict(model_lmsc1, 
+                             newdata = b24_1)) %>%
+  arrange(
+    match(Condition, 
+          list_of_conditions)) %>%
 
-  mutate(Factor = housekeeping_factor_vector,
-         Copy_number_mod = Copy_number / Factor,
-         Control_mean = mean(Copy_number_mod[Condition == list_of_conditions[1]],
-                          na.rm = T),
-         Value_norm = Copy_number_mod / Control_mean,
-         Value_norm_old = Copy_number / Control_mean)
+  mutate(
+    Factor = housekeeping_factor_vector,
+    Copy_number_mod = Copy_number / Factor,
+    Control_mean = mean(
+      Copy_number_mod[Condition == list_of_conditions[1]], 
+      na.rm = T
+      ),
+    Value_norm = Copy_number_mod / Control_mean,
+    Value_norm_old = Copy_number / Control_mean
+    )
+         
 
 b24_1
 
@@ -113,9 +146,11 @@ boxplot(Value_norm~Condition, b24_1)
 b24_1
 
 ###########
-p_val <- c(0.8031417,
-           0.9655795,
-           0.0564754)
+p_val <- c(
+  0.8031417,
+  0.9655795,
+  0.0564754
+  )
 range_y <- 2
 breaks_y <- 0.5
 plot_title <- 'bIFIT1 - 24h'
@@ -126,44 +161,56 @@ textsize_values <- c()
 
 for (value in p_val) {
   if (value > 0.05) {
-    textsize_values <- append(textsize_values, 4)
+    textsize_values <- append(
+      textsize_values, 4)
   } else {
-    textsize_values <- append(textsize_values, 5)
+    textsize_values <- append(
+      textsize_values, 5)
   }
 }
 
-plot_b24_1 <- ggplot(b24_1, aes(x = Condition, 
-                                y = Value_norm, 
-                                fill = Condition)) +
-  geom_violin(trim=FALSE,
-              alpha = 0.5,
-              scale = 'width',
-              adjust = 0.7) +
-  stat_summary(fun.data=mean_se, 
-               fun.args = list(mult=1), 
-               geom="pointrange", 
-               color="black",
-               show.legend = F) +
-  scale_x_discrete(limits = list_of_conditions) +
-  scale_fill_manual(breaks = list_of_conditions,
-                    values = list_of_colours) +
+plot_b24_1 <- ggplot(
+  b24_1, 
+  aes(
+    x = Condition, 
+    y = Value_norm,
+    fill = Condition)) +
+  geom_violin(
+    trim = FALSE,
+    alpha = 0.5,
+    scale = 'width',
+    adjust = 0.7) +
+  stat_summary(
+    fun.data = mean_se, 
+    fun.args = list(mult=1), 
+    geom = "pointrange", 
+    color = "black",
+    show.legend = F) +
+  scale_x_discrete(
+    limits = list_of_conditions) +
+  scale_fill_manual(
+    breaks = list_of_conditions,
+    values = list_of_colours) +
   theme(
     plot.title = element_text(
-      size=20, 
-      face='bold', 
+      size = 20, 
+      face = 'bold', 
       margin = margin(10, 0, 10, 0), 
       hjust = 0.5
     ),
-    legend.text = element_text(size=15),  
-    legend.title=element_blank(),
-    axis.text.y=element_text(angle=0, 
-                             size=12, 
-                             vjust=0.5),
+    legend.text = element_text(
+      size=15),  
+    legend.title = element_blank(),
+    axis.text.y = element_text(
+      angle=0, 
+      size=12, 
+      vjust=0.5),
     axis.title.x = element_blank(),
-    axis.title.y = element_text(size = 15, 
-                                face='bold', 
-                                vjust=-0.5, 
-                                margin = margin(0, 10, 0, 0)),
+    axis.title.y = element_text(
+      size = 15, 
+      face='bold', 
+      vjust=-0.5, 
+      margin = margin(0, 10, 0, 0)),
     axis.text.x=element_blank(),
     axis.ticks.x=element_blank(),
     aspect.ratio = 2/1
@@ -173,31 +220,44 @@ plot_b24_1 <- ggplot(b24_1, aes(x = Condition,
     y = y_axis_title,
     x = NULL
   ) +
-  scale_y_continuous(breaks= seq(0, range_y, breaks_y), 
-                     limits = c(0, range_y)) +
+  scale_y_continuous(
+    breaks= seq(0, 
+                range_y, 
+                breaks_y), 
+                     
+    limits = c(0, range_y)) +
   
-  geom_signif(comparisons = list(c(list_of_conditions[1], list_of_conditions[2])), 
-              annotation = p_val[1], 
-              y_position = 0.93*range_y - 2*(range_y*0.075), 
-              tip_length = 0, 
-              vjust= -0.2, 
-              size = 0.7, 
-              textsize = textsize_values[1]) +
-  geom_signif(comparisons = list(c(list_of_conditions[1], list_of_conditions[3])), 
-              annotation = p_val[2], 
-              y_position = 0.93*range_y - 1*(range_y*0.075), 
-              tip_length = 0, 
-              vjust= -0.2, 
-              size = 0.7, 
-              textsize = textsize_values[2]) +
-  geom_signif(comparisons = list(c(list_of_conditions[1], list_of_conditions[4])), 
-              annotation = p_val[3], 
-              y_position = 0.93*range_y - 0*(range_y*0.075), 
-              tip_length = 0, 
-              vjust= -0.2, 
-              size = 0.7, 
-              textsize = textsize_values[3])
-
+  geom_signif(
+    comparisons = list(c(
+      list_of_conditions[1], 
+      list_of_conditions[2])), 
+    annotation = p_val[1], 
+    y_position = 0.93*range_y - 2*(range_y*0.075), 
+    tip_length = 0, 
+    vjust= -0.2, 
+    size = 0.7,
+    textsize = textsize_values[1]) +
+              
+  geom_signif(
+    comparisons = list(c(
+      list_of_conditions[1], 
+      list_of_conditions[3])), 
+    annotation = p_val[2], 
+    y_position = 0.93*range_y - 1*(range_y*0.075), 
+    tip_length = 0, 
+    vjust= -0.2, 
+    size = 0.7, 
+    textsize = textsize_values[2]) +
+              
+  geom_signif(
+    comparisons = list(c(list_of_conditions[1], 
+                         list_of_conditions[4])), 
+    annotation = p_val[3], 
+    y_position = 0.93*range_y - 0*(range_y*0.075), 
+    tip_length = 0, 
+    vjust= -0.2, 
+    size = 0.7, 
+    textsize = textsize_values[3])
 
 plot_b24_1
 
@@ -210,7 +270,8 @@ height <- 20
 file_name <- 'b24_1'
 ###########
 
-ggsave(filename = paste(file_name, '.svg', sep = ''), 
+ggsave(filename = paste(
+  file_name, '.svg', sep = ''), 
        plot = plot_b24_1, 
        device = 'svg', 
        path = 'Figures', 
@@ -218,7 +279,8 @@ ggsave(filename = paste(file_name, '.svg', sep = ''),
        height = height, 
        width = width, 
        units = 'cm')
-ggsave(filename = paste(file_name, '.png', sep = ''), 
+ggsave(filename = paste(
+  file_name, '.png', sep = ''), 
        plot = plot_b24_1, 
        device = 'png', 
        path = 'Figures', 
