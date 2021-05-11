@@ -37,7 +37,7 @@ TukeyHSD(aov(Value_norm~Condition, a549_1))
 t.test(Value_norm~Condition, 
        data=a549_1, 
        alternative='two.sided',
-       var.equal=F)
+       var.equal=T)
 
 # for non normal distribution but equal variance - multiple comparison
 library(dunn.test)
