@@ -1,4 +1,4 @@
-# .libPaths('C:/r_packages')
+.libPaths('C:/r_packages')
 
 #########
 # change 'a549_1',
@@ -28,10 +28,16 @@ leveneTest(Value_norm~Condition, a549_1)
 
 #### getting p values ----------------
 
-# for normal distribution and variance
+# for normal distribution and variance - multiple comparison
 library(DTK)
 anova(lm(Value_norm~Condition, a549_1))
 TukeyHSD(aov(Value_norm~Condition, a549_1))
+
+# for normal distribution and variance - single comparison
+t.test(Value_norm~Condition, 
+       data=a549_1, 
+       alternative='two.sided',
+       var.equal=F)
 
 # for non normal distribution but equal variance - multiple comparison
 library(dunn.test)
@@ -54,7 +60,7 @@ oneway.test(Value_norm~Condition,
             var.equal = F)
 a549_1 %>% games_howell_test(Value_norm~Condition)
 
-# for normal distribution but non equal variance single comparison
+# for normal distribution but non equal variance - single comparison
 t.test(Value_norm~Condition, 
        data=a549_1, 
        alternative='two.sided',
