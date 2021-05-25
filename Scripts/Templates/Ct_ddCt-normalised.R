@@ -149,7 +149,7 @@ for (value in p_val) {
   }
 }
 
-plot_mdbk_bi1 <- ggplot(
+plot_hifit1 <- ggplot(
   hifit1, 
   aes(
     x = Condition, 
@@ -247,7 +247,7 @@ plot_hifit1
 dpi <- 600
 width <- 16
 height <- 20
-file_name <- 'A549_hIFIT1'
+file_name <- 'hifit1'
 ###########
 
 ggsave(filename = paste(
