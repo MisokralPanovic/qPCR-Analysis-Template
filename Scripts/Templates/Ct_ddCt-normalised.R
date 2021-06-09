@@ -51,7 +51,10 @@ housekeeping_control <- gene_of_interest_data %>%
 housekeeping_control <- aggregate(
   housekeeping_control[1],
   list(housekeeping_control$Condition),
-  mean)
+  mean) %>% 
+  arrange(match(
+    Group.1, 
+    list_of_conditions))
 housekeeping_control <- rep(
   housekeeping_control$Ct, 
   each=replicates)
