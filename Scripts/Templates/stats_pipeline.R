@@ -48,7 +48,8 @@ library(dunn.test)
 kruskal.test(Value_norm~Condition, a549_1)
 dunn.test(a549_1$Value_norm, 
           a549_1$Condition, 
-          altp=T)
+          altp=T,
+          list=T)
 
 # for non normal distribution but equal variance - single comparison
 t.test(Value_norm~Condition, 
