@@ -20,13 +20,6 @@ list_of_colours <- c(
   '#9a6a00', 
   '#009e73'
   )
-file_emmit <- c(
-  T,T,T,
-  T,T,T,
-  T,T,T,
-  T,T,T
-  )
-replicates <- 3
 ###########
 
 # data prep ----
@@ -45,20 +38,15 @@ housekeeping_control <- gene_of_interest_data %>%
   ###########
   filter(Target == 'hGAPDH',
          Condition %in% list_of_conditions
-         )
+         ) %>%
   ###########
 
-housekeeping_control <- aggregate(
-  housekeeping_control[1],
-  list(housekeeping_control$Condition),
-  mean) %>% 
+  group_by(Condition) %>%
+  mutate(mean_Ct = mean(Ct)) %>%
+  ungroup() %>%
   arrange(match(
-    Group.1, 
+    Condition, 
     list_of_conditions))
-housekeeping_control <- rep(
-  housekeeping_control$Ct, 
-  each=replicates)
-housekeeping_control_vector <- housekeeping_control[file_emmit]
 
 hifit1 <- gene_of_interest_data %>%
   
@@ -74,7 +62,7 @@ hifit1 <- gene_of_interest_data %>%
     Condition, 
     list_of_conditions)) %>%
   mutate(
-    Control_ct_mean = housekeeping_control_vector,
+    Control_ct_mean = housekeeping_control$mean_Ct,
     dCt = Ct - Control_ct_mean,
     Control_dct_mean = mean(
       dCt[Condition == list_of_conditions[1]],
