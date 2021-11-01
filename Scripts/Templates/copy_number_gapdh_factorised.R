@@ -23,18 +23,6 @@ list_of_colours <- c(
 ###########
 
 # data prep ----
-gene_of_interest_data <- read.csv(
-  paste('Data/', 
-        
-        ############
-        'copy_number_extrapolation_data', 
-        ############
-        
-        '.csv', 
-        sep = ''
-        )
-  )
-
 housekeeping_gene_data <- read.csv(
   paste('Data/', 
         ############
@@ -44,11 +32,8 @@ housekeeping_gene_data <- read.csv(
         '.csv', 
         sep = ''
         )
-  )
-      
-                                   
-housekeeping_gene_data <- housekeeping_gene_data %>%
-  
+  ) %>%
+                                       
   ########################
   filter(Time == '24h',
          Condition %in% list_of_conditions
@@ -71,24 +56,32 @@ housekeeping_gene_data <- housekeeping_gene_data %>%
   arrange(match(
     Condition, 
     list_of_conditions))
-    
-b24_1 <- gene_of_interest_data %>%
+
+b24_1 <- read.csv(
+  paste('Data/', 
+        
+        ############
+        'copy_number_extrapolation_data', 
+        ############
+        
+        '.csv', 
+        sep = ''
+        )
+  ) %>%  
   
   ###########
   filter(TimePoint == 24,
          Target == 'bIFIT1',
          Condition %in% list_of_conditions
-         )
+         ) %>%
   ###########
 
-b24_1 <- b24_1 %>%
   mutate(
     Copy_number = 10^predict(model_lmsc1, 
                              newdata = b24_1)) %>%
   arrange(
     match(Condition, 
           list_of_conditions)) %>%
-
   mutate(
     Factor = housekeeping_control$mean_Ct,
     Copy_number_mod = Copy_number / Factor,
@@ -98,8 +91,7 @@ b24_1 <- b24_1 %>%
       ),
     Value_norm = Copy_number_mod / Control_mean,
     Value_norm_old = Copy_number / Control_mean
-    )
-         
+    )       
 
 b24_1
 
