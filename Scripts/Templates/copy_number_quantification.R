@@ -24,7 +24,7 @@ list_of_colours <- c(
 ###########
 
 # data prep ----
-initial_data <- read.csv(
+mdbk_bi1 <- read.csv(
   paste('Data/', 
         ############
         'copy_number_extrapolation_data', 
@@ -32,9 +32,7 @@ initial_data <- read.csv(
         
         '.csv', 
         sep = '')
-  )
-      
-mdbk_bi1 <- initial_data %>%
+  ) %>%
   
   ###########
   filter(CellLine == 'MDBK',
@@ -45,9 +43,7 @@ mdbk_bi1 <- initial_data %>%
 
   arrange(match(
     Condition, 
-    list_of_conditions))
-
-mdbk_bi1 <- mdbk_bi1 %>%
+    list_of_conditions)) %>%
   mutate(
     Copy_number = 10^predict(
       model_lmsc1, 
