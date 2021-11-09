@@ -8,7 +8,7 @@ library(scales)
 ###########
 
 # data prep ----
-standards_data <- read.csv(
+scb2_2 <- read.csv(
   paste('Data/', 
         
         ############
@@ -17,10 +17,8 @@ standards_data <- read.csv(
         
         '.csv', 
         sep = '')
-  )
-      
-scb2_2 <- standards_data %>%
-  
+  ) %>%
+    
   ###########
   filter(Target == 'bIFIT2',
          Primer_set == 'PS22'

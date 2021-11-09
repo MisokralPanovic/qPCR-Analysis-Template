@@ -24,13 +24,6 @@ list_of_colours <- c(
   '#a800a8', 
   '#6d006d'
 )
-file_emmit <- c(
-  T,T,T,
-  T,T,T,
-  T,T,T,
-  T,T,T
-)
-replicates <- 3
 ###########
 
 # data prep ----
@@ -51,20 +44,15 @@ filter(Target == 'bGAPDH',
        Time_point == '48h',
        Additional_info != 'bMx1',
        Condition %in% list_of_conditions
-)
+) %>%
 ###########
 
-housekeeping_control <- aggregate(
-  housekeeping_control[1],
-  list(housekeeping_control$Condition),
-  mean) %>% 
+  group_by(Condition) %>%
+  mutate(mean_Ct = mean(Ct)) %>%
+  ungroup() %>%
   arrange(match(
-    Group.1, 
+    Condition, 
     list_of_conditions))
-housekeeping_control <- rep(
-  housekeeping_control$Ct, 
-  each=replicates)
-housekeeping_control_vector <- housekeeping_control[file_emmit]
 
 mdbk_brsvn_48h <- gene_of_interest_data %>%
   
@@ -80,7 +68,7 @@ arrange(match(
   Condition, 
   list_of_conditions)) %>%
   mutate(
-    Control_ct_mean = housekeeping_control_vector,
+    Control_ct_mean = housekeeping_control$mean_Ct,
     dCt = Ct - Control_ct_mean,
     Control_dct_mean = mean(
       dCt[Condition == list_of_conditions[1]],

@@ -27,7 +27,7 @@ list_of_colours <- c(
 ###########
 
 # data prep -------------------------
-initial_ct_data <- read.csv(
+mdbk_bRSVN <- read.csv(
   paste('Data/', 
         
         ############
@@ -36,10 +36,9 @@ initial_ct_data <- read.csv(
         
         '.csv', 
         sep = '')
-  )
+  ) %>%
 
 # all dataset normalisation - reverse values so mock low and infection high
-mdbk_bRSVN <- initial_ct_data %>%
   
   ###########
   filter(CellLine == 'MDBK',
