@@ -53,7 +53,6 @@ housekeeping_gene_data <- read.csv(
         )
   )
       
-                                   
 housekeeping_gene_data <- housekeeping_gene_data %>%
   
   ########################
