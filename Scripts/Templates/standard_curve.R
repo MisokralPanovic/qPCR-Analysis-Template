@@ -3,6 +3,34 @@ library(tidyverse)
 library(ggplot2)
 library(scales)
 
+figure_theme <- theme(
+  plot.title = element_text(
+    size = 20, 
+    face = 'bold', 
+    margin = margin(10, 0, 10, 0), 
+    hjust = 0.5
+  ),
+  axis.text.y = element_text(
+    angle = 0, 
+    size = 12, 
+    vjust = 0.5),
+  axis.text.x.bottom = element_text(
+    angle = 0, 
+    size = 12, 
+    vjust = 0.5),
+  axis.title.x = element_text(
+    size = 15, 
+    face = 'bold', 
+    vjust = -0.5, 
+    margin = margin(0, 10, 0, 0)),
+  axis.title.y = element_text(
+    size = 15, 
+    face = 'bold', 
+    vjust = -0.5, 
+    margin = margin(0, 10, 0, 0)),
+  aspect.ratio = 1/2
+)
+
 ###########
 # change 'bIFIT2', 'PS22' and 'scb2_2'
 ###########
@@ -61,10 +89,11 @@ data.combined.predict_scb2_2 <- cbind(
 # data plotting ----
 
 ###########
+plot_title <- 'bIFIT2 - PS22 Standard Curve'
+
 x_annotation_position <- 1000000
 y_annotation_position <- 37.5
 top_range <- 40
-plot_title <- 'bIFIT2 - PS22 Standard Curve'
 y_axis_title <- 'Cycle Threshold'
 x_axis_title <- 'Copy Number'
 ###########
@@ -93,33 +122,7 @@ plot_scb2_2 <- ggplot(
                           function(x) 10^x)
   ) +
   annotation_logticks(sides='b') +
-  theme(
-    plot.title = element_text(
-      size = 20, 
-      face = 'bold', 
-      margin = margin(10, 0, 10, 0), 
-      hjust = 0.5
-    ),
-    axis.text.y = element_text(
-      angle = 0, 
-      size = 12, 
-      vjust = 0.5),
-    axis.text.x.bottom = element_text(
-      angle = 0, 
-      size = 12, 
-      vjust = 0.5),
-    axis.title.x = element_text(
-      size = 15, 
-      face = 'bold', 
-      vjust = -0.5, 
-      margin = margin(0, 10, 0, 0)),
-    axis.title.y = element_text(
-      size = 15, 
-      face = 'bold', 
-      vjust = -0.5, 
-      margin = margin(0, 10, 0, 0)),
-    aspect.ratio = 1/2
-  ) +
+  figure_theme +
   annotate('text',
            y = y_annotation_position, 
            x = x_annotation_position, 

@@ -7,6 +7,30 @@ library(scales)
 library(ggplot2)
 library(ggpubr)
 
+figure_theme <-theme(
+  plot.title = element_text(
+    size = 20, 
+    face = 'bold', 
+    margin = margin(10, 0, 10, 0), 
+    hjust = 0.5
+  ),
+  legend.text = element_text(
+    size=15),  
+  legend.title = element_blank(),
+  axis.text.y = element_text(
+    angle=0, 
+    size=12, 
+    vjust=0.5),
+  axis.title.x = element_blank(),
+  axis.title.y = element_text(
+    size = 15, 
+    face='bold', 
+    vjust=-0.5, 
+    margin = margin(0, 10, 0, 0)),
+  axis.text.x=element_blank(),
+  axis.ticks.x=element_blank(),
+  aspect.ratio = 2/1
+)
 ###########
 # change 'hRSV N', ' 'mdbk_brsvn_48h'
 ###########
@@ -40,12 +64,12 @@ gene_of_interest_data <- read.csv(
 housekeeping_control <- gene_of_interest_data %>% 
   
   ###########
-filter(Target == 'bGAPDH',
-       Time_point == '48h',
-       Additional_info != 'bMx1',
-       Condition %in% list_of_conditions
+  filter(Target == 'bGAPDH',
+        Time_point == '48h',
+        Additional_info != 'bMx1',
+        Condition %in% list_of_conditions
 ) %>%
-###########
+  ###########
 
   group_by(Condition) %>%
   mutate(mean_Ct = mean(Ct)) %>%
@@ -165,30 +189,7 @@ plot_mdbk_brsvn_48h <- ggplot(
   scale_fill_manual(
     breaks = list_of_conditions,
     values = list_of_colours) +
-  theme(
-    plot.title = element_text(
-      size = 20, 
-      face = 'bold', 
-      margin = margin(10, 0, 10, 0), 
-      hjust = 0.5
-    ),
-    legend.text = element_text(
-      size=15),  
-    legend.title = element_blank(),
-    axis.text.y = element_text(
-      angle=0, 
-      size=12, 
-      vjust=0.5),
-    axis.title.x = element_blank(),
-    axis.title.y = element_text(
-      size = 15, 
-      face='bold', 
-      vjust=-0.5, 
-      margin = margin(0, 10, 0, 0)),
-    axis.text.x=element_blank(),
-    axis.ticks.x=element_blank(),
-    aspect.ratio = 2/1
-  ) +
+  figure_theme +
   labs(
     title = plot_title,
     y = y_axis_title,

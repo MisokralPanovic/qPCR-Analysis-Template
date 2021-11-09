@@ -3,6 +3,30 @@ library(tidyverse)
 library(ggsignif)
 library(data.table)
 
+figure_theme <- theme(
+  plot.title = element_text(
+    size=20, 
+    face='bold', 
+    margin = margin(10, 0, 10, 0), 
+    hjust = 0.5
+  ),
+  legend.text = element_text(
+    size=15),  
+  legend.title=element_blank(),
+  axis.text.y=element_text(
+    angle=0, 
+    size=12, 
+    vjust=0.5),
+  axis.title.x = element_blank(),
+  axis.title.y = element_text(
+    size = 15, 
+    face='bold', 
+    vjust=-0.5, 
+    margin = margin(0, 10, 0, 0)),
+  axis.text.x=element_blank(),
+  axis.ticks.x=element_blank(),
+  aspect.ratio = 2/1
+)
 #########
 # change 'mdbk_bi1', 'MDBK', 'bIFIT1', 'model_lmsc1',
 #########
@@ -20,7 +44,6 @@ list_of_colours <- c(
   '#9a6a00', 
   '#009e73'
   )
-                    
 ###########
 
 # data prep ----
@@ -118,12 +141,12 @@ plot_mdbk_bi1 <- ggplot(
     y = Value_norm, 
     fill = Condition)) +
   geom_violin(
-    trim=FALSE,
+    trim = F,
     alpha = 0.5,
     scale = 'width',
     adjust = 0.7) +
   stat_summary(
-    fun.data=mean_se, 
+    fun.data = mean_se, 
     fun.args = list(mult=1), 
     geom="pointrange", 
     color="black",
@@ -134,30 +157,7 @@ plot_mdbk_bi1 <- ggplot(
     breaks = list_of_conditions,
                     
     values = list_of_colours) +
-  theme(
-    plot.title = element_text(
-      size=20, 
-      face='bold', 
-      margin = margin(10, 0, 10, 0), 
-      hjust = 0.5
-    ),
-    legend.text = element_text(
-      size=15),  
-    legend.title=element_blank(),
-    axis.text.y=element_text(
-      angle=0, 
-      size=12, 
-      vjust=0.5),
-    axis.title.x = element_blank(),
-    axis.title.y = element_text(
-      size = 15, 
-      face='bold', 
-      vjust=-0.5, 
-      margin = margin(0, 10, 0, 0)),
-    axis.text.x=element_blank(),
-    axis.ticks.x=element_blank(),
-    aspect.ratio = 2/1
-  ) +
+  figure_theme +
   labs(
     title = plot_title,
     y = y_axis_title,
