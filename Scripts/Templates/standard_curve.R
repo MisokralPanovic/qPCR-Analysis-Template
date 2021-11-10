@@ -111,7 +111,7 @@ plot_scb2_2 <- ggplot(
   ) +
   scale_y_continuous(
     breaks = seq(from = 0, 
-                 to = 40, 
+                 to = top_range, 
                  by = 10),
     limits = c(0,top_range)
   ) +
