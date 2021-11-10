@@ -3,6 +3,30 @@ library(tidyverse)
 library(ggsignif)
 library(data.table)
 
+plot_theme <- theme(
+  plot.title = element_text(
+    size = 20, 
+    face = 'bold', 
+    margin = margin(10, 0, 10, 0), 
+    hjust = 0.5
+  ),
+  legend.text = element_text(
+    size=15),  
+  legend.title = element_blank(),
+  axis.text.y = element_text(
+    angle=0, 
+    size=12, 
+    vjust=0.5),
+  axis.title.x = element_blank(),
+  axis.title.y = element_text(
+    size = 15, 
+    face='bold', 
+    vjust=-0.5, 
+    margin = margin(0, 10, 0, 0)),
+  axis.text.x=element_blank(),
+  axis.ticks.x=element_blank(),
+  aspect.ratio = 2/1
+)
 ###########
 # change 'b24_1', 'MDBK', 'bIFIT1', 'model_lmsc1',
 ###########
@@ -32,15 +56,8 @@ housekeeping_gene_data <- read.csv(
         '.csv', 
         sep = ''
         )
-<<<<<<< HEAD
-  )
-      
-housekeeping_gene_data <- housekeeping_gene_data %>%
-  
-=======
-  ) %>%
+  ) %>% 
                                        
->>>>>>> 1f4b4ef86b8e621a76139ea38d1fe31d763f352c
   ########################
   filter(Time == '24h',
          Condition %in% list_of_conditions
@@ -82,14 +99,12 @@ b24_1 <- read.csv(
          Condition %in% list_of_conditions
          ) %>%
   ###########
-
+  arrange(
+  match(Condition, 
+        list_of_conditions)) %>%
   mutate(
     Copy_number = 10^predict(model_lmsc1, 
-                             newdata = b24_1)) %>%
-  arrange(
-    match(Condition, 
-          list_of_conditions)) %>%
-  mutate(
+                             newdata = b24_1),
     Factor = housekeeping_control$mean_Ct,
     Copy_number_mod = Copy_number / Factor,
     Control_mean = mean(
@@ -178,30 +193,7 @@ plot_b24_1 <- ggplot(
   scale_fill_manual(
     breaks = list_of_conditions,
     values = list_of_colours) +
-  theme(
-    plot.title = element_text(
-      size = 20, 
-      face = 'bold', 
-      margin = margin(10, 0, 10, 0), 
-      hjust = 0.5
-    ),
-    legend.text = element_text(
-      size=15),  
-    legend.title = element_blank(),
-    axis.text.y = element_text(
-      angle=0, 
-      size=12, 
-      vjust=0.5),
-    axis.title.x = element_blank(),
-    axis.title.y = element_text(
-      size = 15, 
-      face='bold', 
-      vjust=-0.5, 
-      margin = margin(0, 10, 0, 0)),
-    axis.text.x=element_blank(),
-    axis.ticks.x=element_blank(),
-    aspect.ratio = 2/1
-  ) +
+  plot_theme +
   labs(
     title = plot_title,
     y = y_axis_title,
