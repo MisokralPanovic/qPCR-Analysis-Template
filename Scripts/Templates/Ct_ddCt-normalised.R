@@ -192,12 +192,11 @@ plot_hifit1 <- ggplot(
     y = y_axis_title,
     x = NULL
   ) +
+  coord_cartesian(ylim = c(0, range_y)) +
   scale_y_continuous(
     breaks= seq(0, 
                 range_y, 
-                breaks_y), 
-    
-    limits = c(0, range_y)) +
+                breaks_y)) +
   
   geom_signif(
     comparisons = list(c(
