@@ -6,7 +6,11 @@
 
 # data analysis ----
 boxplot(Value_norm~Condition, a549_1)
-plot(lm(Value_norm~Condition, a549_1))
+
+library(ggplot2)
+library(ggfortify)
+autoplot(lm(Value_norm~Condition, a549_1), 
+         which = 1:3, nrow = 3, ncol = 1)
 
 #### test normality -----------------
 shapiro.test(a549_1$Value_norm[1:3])
