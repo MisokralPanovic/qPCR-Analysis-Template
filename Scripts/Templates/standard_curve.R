@@ -1,7 +1,7 @@
 # .libPaths('C:/r_packages')
 library(tidyverse)
-library(ggplot2)
 library(scales)
+library(data.table)
 
 figure_theme <- theme(
   plot.title = element_text(
@@ -36,7 +36,7 @@ figure_theme <- theme(
 ###########
 
 # data prep ----
-scb2_2 <- read.csv(
+scb2_2 <- fread(
   paste('Data/', 
         
         ############
@@ -61,17 +61,10 @@ model_lmscb2_2 <- lm(
   )
 plot(model_lmscb2_2)
 
-# put the -# into efficency equation
-lm(Ct~log10(Copy_number), 
-   data = scb2_2)
-
-###########
-rate_scb2_2 <- -3.3
-###########
 
 efficiency_scb2_2 <- paste(
   round(
-    (10^(-1/ rate_scb2_2 ) -1)*100, 
+    (10^(-1/ lm(Ct~log10(Copy_number), data = scb2_2)[[1]][2]) -1)*100, 
     digits = 2), 
   '% Amplification Efficiency', 
   sep = ''
