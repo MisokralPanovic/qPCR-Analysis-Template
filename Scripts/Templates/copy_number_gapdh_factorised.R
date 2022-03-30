@@ -2,52 +2,49 @@
 library(tidyverse)
 library(ggsignif)
 library(data.table)
+library(scales)
 
-plot_theme <- theme(
+figure_theme <-  theme(
   plot.title = element_text(
-    size = 20, 
+    size = 15, 
     face = 'bold', 
-    margin = margin(10, 0, 10, 0), 
+    margin = margin(8, 0, 8, 0), 
     hjust = 0.5
   ),
   legend.text = element_text(
-    size=15),  
+    size=10),  
   legend.title = element_blank(),
   axis.text.y = element_text(
     angle=0, 
-    size=12, 
+    size=9, 
     vjust=0.5),
   axis.title.x = element_blank(),
   axis.title.y = element_text(
-    size = 15, 
+    size = 12, 
     face='bold', 
     vjust=-0.5, 
-    margin = margin(0, 10, 0, 0)),
+    margin = margin(0, 8, 0, 0)),
   axis.text.x=element_blank(),
   axis.ticks.x=element_blank(),
   aspect.ratio = 2/1
 )
 ###########
-# change 'b24_1', 'MDBK', 'bIFIT1', 'model_lmsc1',
+# change 'bifit1', 'MDBK', 'bIFIT1', 'model_lmscb1',
 ###########
 
 ###########
 list_of_conditions <- c(
   'Mock',
-  'cbRSV dNS1 0.001-24',
-  'cbRSV dNS2 0.01-24',
-  'cbRSV dNS1/2 0.001-24'
+  'bRSV dSH 1-24'
   )
 list_of_colours <- c(
   '#999999', 
-  '#ffc034', 
-  '#9a6a00', 
-  '#009e73'
+  '#ffc034'
   )
 ###########
 
 # data prep ----
-housekeeping_gene_data <- read.csv(
+housekeeping_gene_data <- fread(
   paste('Data/', 
         ############
         'ct_data', 
@@ -59,7 +56,8 @@ housekeeping_gene_data <- read.csv(
   ) %>% 
                                        
   ########################
-  filter(Time == '24h',
+  filter(Target == 'bGAPDH',
+         Cell_line == "MDBK",
          Condition %in% list_of_conditions
          ) %>%
   ########################
@@ -81,7 +79,7 @@ housekeeping_gene_data <- read.csv(
     Condition, 
     list_of_conditions))
 
-b24_1 <- read.csv(
+bifit1 <- fread(
   paste('Data/', 
         
         ############
@@ -91,21 +89,22 @@ b24_1 <- read.csv(
         '.csv', 
         sep = ''
         )
-  ) %>%  
-  
+  )  %>% 
   ###########
-  filter(TimePoint == 24,
-         Target == 'bIFIT1',
-         Condition %in% list_of_conditions
-         ) %>%
+  filter(Target == 'bIFIT1',
+       Cell_line == "MDBK",
+       Condition %in% list_of_conditions
+  ) %>%
   ###########
   arrange(
-  match(Condition, 
-        list_of_conditions)) %>%
+    match(Condition, 
+          list_of_conditions))
+  
+bifit1 <- bifit1 %>% 
   mutate(
-    Copy_number = 10^predict(model_lmsc1, 
-                             newdata = b24_1),
-    Factor = housekeeping_control$mean_Ct,
+    Copy_number = 10^predict(model_lmscb1, 
+                             newdata = bifit1),
+    Factor = housekeeping_gene_data$mean_Ct,
     Copy_number_mod = Copy_number / Factor,
     Control_mean = mean(
       Copy_number_mod[Condition == list_of_conditions[1]], 
@@ -115,47 +114,41 @@ b24_1 <- read.csv(
     Value_norm_old = Copy_number / Control_mean
     )       
 
-b24_1
+bifit1
 
 # data analysis ----
-boxplot(Value_norm~Condition, b24_1)
-plot(lm(Value_norm~Condition, b24_1))
+boxplot(Value_norm~Condition, bifit1)
+plot(lm(Value_norm~Condition, bifit1))
 
 # test normality
-shapiro.test(b24_1$Value_norm[1:3])
-shapiro.test(b24_1$Value_norm[4:6])
-shapiro.test(b24_1$Value_norm[7:9])
-shapiro.test(b24_1$Value_norm[10:12])
+shapiro.test(bifit1$Value_norm[1:3])
+shapiro.test(bifit1$Value_norm[4:6])
 
-plot(residuals(lm(Value_norm~Condition, b24_1)))
-shapiro.test(residuals(lm(Value_norm~Condition, b24_1)))
+plot(residuals(lm(Value_norm~Condition, bifit1)))
+shapiro.test(residuals(lm(Value_norm~Condition, bifit1)))
 
 ### normal distribution
 
 # if distribution normal
-bartlett.test(Value_norm~Condition, b24_1)
+bartlett.test(Value_norm~Condition, bifit1)
 
 ### equal variance
 
 # for normal distribution and variance
 library(DTK)
-anova(lm(Value_norm~Condition, b24_1))
-TukeyHSD(aov(Value_norm~Condition, b24_1))
+anova(lm(Value_norm~Condition, bifit1))
+TukeyHSD(aov(Value_norm~Condition, bifit1))
 
 # plot data ----
-boxplot(Value_norm~Condition, b24_1)
-b24_1
+boxplot(Value_norm~Condition, bifit1)
+bifit1
 list_of_conditions
 
 ###########
 p_val <- c(
-  0.8031417,
-  0.9655795,
-  0.0564754
+  0.8031417
   )
-range_y <- 2
-breaks_y <- 0.5
-plot_title <- 'bIFIT1 - 24h'
+plot_title <- 'bIFIT1'
 y_axis_title <- 'Relative mRNA Levels'
 ###########
 
@@ -164,15 +157,15 @@ textsize_values <- c()
 for (value in p_val) {
   if (value > 0.05) {
     textsize_values <- append(
-      textsize_values, 4)
+      textsize_values, 3)
   } else {
     textsize_values <- append(
-      textsize_values, 5)
+      textsize_values, 4)
   }
 }
 
-plot_b24_1 <- ggplot(
-  b24_1, 
+plot_bifit1 <- ggplot(
+  bifit1, 
   aes(
     x = Condition, 
     y = Value_norm,
@@ -193,51 +186,33 @@ plot_b24_1 <- ggplot(
   scale_fill_manual(
     breaks = list_of_conditions,
     values = list_of_colours) +
-  plot_theme +
+  theme_bw() +
+  figure_theme +
   labs(
     title = plot_title,
     y = y_axis_title,
     x = NULL
   ) +
-  coord_cartesian(ylim = c(0, range_y)) +
-  scale_y_continuous(
-    breaks= seq(0, 
-                range_y, 
-                breaks_y)) +
- 
+  scale_y_continuous(trans = log2_trans(),
+                     breaks = trans_breaks("log2", function(x) 2^x, n = 8),
+                     labels = trans_format("log2", math_format(2^.x)),
+                     limits = c(2^-7,2^9),
+                     sec.axis = sec_axis(trans = identity,
+                                         breaks = c(2^-6, 2^-4, 2^-2, 2^0, 2^2, 2^4, 2^6, 2^8),
+                                         labels = c(0.016, 0.062, 0.25, 1, 4, 16, 64, 256)
+                     )) +
   geom_signif(
     comparisons = list(c(
       list_of_conditions[1], 
       list_of_conditions[2])), 
     annotation = p_val[1], 
-    y_position = 0.93*range_y - 2*(range_y*0.075), 
+    y_position = 7, 
     tip_length = 0, 
     vjust= -0.2, 
     size = 0.7,
-    textsize = textsize_values[1]) +
-              
-  geom_signif(
-    comparisons = list(c(
-      list_of_conditions[1], 
-      list_of_conditions[3])), 
-    annotation = p_val[2], 
-    y_position = 0.93*range_y - 1*(range_y*0.075), 
-    tip_length = 0, 
-    vjust= -0.2, 
-    size = 0.7, 
-    textsize = textsize_values[2]) +
-              
-  geom_signif(
-    comparisons = list(c(list_of_conditions[1], 
-                         list_of_conditions[4])), 
-    annotation = p_val[3], 
-    y_position = 0.93*range_y - 0*(range_y*0.075), 
-    tip_length = 0, 
-    vjust= -0.2, 
-    size = 0.7, 
-    textsize = textsize_values[3])
+    textsize = textsize_values[1])
 
-plot_b24_1
+plot_bifit1
 
 # saving data and plot ------------------------------
 
@@ -245,12 +220,12 @@ plot_b24_1
 dpi <- 600
 width <- 16
 height <- 20
-file_name <- 'b24_1'
+file_name <- 'bifit1'
 ###########
 
 ggsave(filename = paste(
   file_name, '.svg', sep = ''), 
-       plot = plot_b24_1, 
+       plot = plot_bifit1, 
        device = 'svg', 
        path = 'Figures', 
        dpi = dpi, 
@@ -259,7 +234,7 @@ ggsave(filename = paste(
        units = 'cm')
 ggsave(filename = paste(
   file_name, '.png', sep = ''), 
-       plot = plot_b24_1, 
+       plot = plot_bifit1, 
        device = 'png', 
        path = 'Figures', 
        dpi = dpi, 
@@ -267,7 +242,7 @@ ggsave(filename = paste(
        width = width, 
        units = 'cm')
 
-fwrite(b24_1, 
+fwrite(bifit1, 
        paste('Adjusted-Data/', 
              file_name, 
              '.csv', 
