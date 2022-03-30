@@ -5,38 +5,38 @@ library(data.table)
 
 figure_theme <- theme(
   plot.title = element_text(
-    size = 20, 
+    size = 15, 
     face = 'bold', 
-    margin = margin(10, 0, 10, 0), 
+    margin = margin(8, 0, 8, 0), 
     hjust = 0.5
   ),
   axis.text.y = element_text(
     angle = 0, 
-    size = 12, 
+    size = 9, 
     vjust = 0.5),
   axis.text.x.bottom = element_text(
     angle = 0, 
-    size = 12, 
+    size = 9, 
     vjust = 0.5),
   axis.title.x = element_text(
-    size = 15, 
+    size = 12, 
     face = 'bold', 
     vjust = -0.5, 
-    margin = margin(0, 10, 0, 0)),
+    margin = margin(0, 8, 0, 0)),
   axis.title.y = element_text(
-    size = 15, 
-    face = 'bold', 
-    vjust = -0.5, 
-    margin = margin(0, 10, 0, 0)),
+    size = 12, 
+    face='bold', 
+    vjust=-0.5, 
+    margin = margin(0, 8, 0, 0)),
   aspect.ratio = 1/2
 )
 
 ###########
-# change 'bIFIT2', 'PS22' and 'scb2_2'
+# change 'bIFIT1', 'PS11' and 'scb1'
 ###########
 
 # data prep ----
-scb2_2 <- fread(
+scb1 <- fread(
   paste('Data/', 
         
         ############
@@ -48,42 +48,40 @@ scb2_2 <- fread(
   ) %>%
     
   ###########
-  filter(Target == 'bIFIT2',
-         Primer_set == 'PS22'
+  filter(Target == 'bIFIT1',
+         Primer_set == 'PS11'
          )
   ###########
 
-scb2_2
+scb1
 
-model_lmscb2_2 <- lm(
+model_lmscb1 <- lm(
   log10(Copy_number)~Ct, 
-  data = scb2_2
+  data = scb1
   )
-plot(model_lmscb2_2)
+plot(model_lmscb1)
 
-
-efficiency_scb2_2 <- paste(
+efficiency_scb1 <- paste(
   round(
-    (10^(-1/ lm(Ct~log10(Copy_number), data = scb2_2)[[1]][2]) -1)*100, 
+    (10^(-1/ lm(Ct~log10(Copy_number), data = scb1)[[1]][2]) -1)*100, 
     digits = 2), 
   '% Amplification Efficiency', 
   sep = ''
   )
 
-model.predict_scb2_2 <- 10^predict(
-  model_lmscb2_2, 
+model.predict_scb1 <- 10^predict(
+  model_lmscb1, 
   interval = 'prediction'
   )
-data.combined.predict_scb2_2 <- cbind(
-  scb2_2,
-  model.predict_scb2_2
+data.combined.predict_scb1 <- cbind(
+  scb1,
+  model.predict_scb1
   )
 
 # data plotting ----
 
 ###########
-plot_title <- 'bIFIT2 - PS22 Standard Curve'
-
+plot_title <- 'bIFIT1 - PS11 Standard Curve'
 x_annotation_position <- 1000000
 y_annotation_position <- 37.5
 top_range <- 40
@@ -91,8 +89,8 @@ y_axis_title <- 'Cycle Threshold'
 x_axis_title <- 'Copy Number'
 ###########
 
-plot_scb2_2 <- ggplot(
-  data = data.combined.predict_scb2_2,
+plot_scb1 <- ggplot(
+  data = data.combined.predict_scb1,
   mapping = aes(x = Copy_number,
                 y = Ct)) +
   geom_point() +
@@ -115,27 +113,28 @@ plot_scb2_2 <- ggplot(
                           function(x) 10^x)
   ) +
   annotation_logticks(sides='b') +
+  theme_bw() +
   figure_theme +
   annotate('text',
            y = y_annotation_position, 
            x = x_annotation_position, 
-           label = efficiency_scb2_2, 
+           label = efficiency_scb1, 
            size = 5)
 
-plot_scb2_2
+plot_scb1
 
 # saving plot ------------------------------
 
 ###########
 dpi <- 600
 width <- 16
-height <- 10
-file_name <- 'scb2_2'
+height <- 20
+file_name <- 'scb1'
 ###########
 
 ggsave(filename = paste(
   file_name, '.svg', sep = ''), 
-       plot = plot_scb2_2, 
+       plot = plot_scb1, 
        device = 'svg', 
        path = 'Figures', 
        dpi = dpi, 
@@ -144,7 +143,7 @@ ggsave(filename = paste(
        units = 'cm')
 ggsave(filename = paste(
   file_name, '.png', sep = ''), 
-       plot = plot_scb2_2, 
+       plot = plot_scb1, 
        device = 'png', 
        path = 'Figures', 
        dpi = dpi, 
