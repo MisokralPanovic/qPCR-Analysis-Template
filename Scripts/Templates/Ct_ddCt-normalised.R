@@ -35,18 +35,20 @@ figure_theme <-  theme(
 ###########
 list_of_conditions <- c(
   'Mock',
+  'bRSV dSH 1-24',
   'hRSV 1-24 ROXO 5-24',
-  'hIFNa 1000-24'
+  "hIFNa 1000-24"
   )
 list_of_colours <- c(
   '#999999', 
   '#9a6a00', 
-  '#009e73'
+  '#009e73',
+  "#0484a5"
   )
 ###########
 
 # data prep ----
-gene_of_interest_data <- fread(
+housekeeping_control <- fread(
   paste('Data/', 
         
         ############
@@ -55,8 +57,7 @@ gene_of_interest_data <- fread(
         
         '.csv', 
         sep = '')
-  )
-housekeeping_control <- gene_of_interest_data %>% 
+  ) %>% 
   
   ###########
   filter(Target == 'hGAPDH',
@@ -109,6 +110,7 @@ plot(lm(Value_norm~Condition, hifit1))
 shapiro.test(hifit1$Value_norm[1:3])
 shapiro.test(hifit1$Value_norm[4:6])
 shapiro.test(hifit1$Value_norm[7:9])
+shapiro.test(hifit1$Value_norm[10:12])
 
 plot(residuals(
   lm(Value_norm~Condition, 
@@ -142,7 +144,8 @@ list_of_conditions
 ###########
 p_val <- c(
   0.8031417,
-  0.0464754
+  0.0464754,
+  0.3186545
   )
 plot_title <- 'A549 - hIFIT1'
 y_axis_title <- 'Relative mRNA Levels'
@@ -213,11 +216,22 @@ plot_hifit1 <- ggplot(
       list_of_conditions[1], 
       list_of_conditions[3])), 
     annotation = p_val[2], 
+    y_position = 7, 
+    tip_length = 0, 
+    vjust= -0.2, 
+    size = 0.7, 
+    textsize = textsize_values[2]) +
+  
+  geom_signif(
+    comparisons = list(c(
+      list_of_conditions[1], 
+      list_of_conditions[4])), 
+    annotation = p_val[3], 
     y_position = 8, 
     tip_length = 0, 
     vjust= -0.2, 
     size = 0.7, 
-    textsize = textsize_values[2])
+    textsize = textsize_values[3])
 
 
 plot_hifit1
