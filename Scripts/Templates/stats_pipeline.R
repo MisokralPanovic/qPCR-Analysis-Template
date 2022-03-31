@@ -1,4 +1,4 @@
-.libPaths('C:/r_packages')
+# .libPaths('C:/r_packages')
 
 #########
 # change 'a549_1',
