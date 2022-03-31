@@ -2,30 +2,28 @@
 library(tidyverse)
 library(ggsignif)
 library(data.table)
-library(ggsignif)
 library(scales)
-library(ggpubr)
 
-figure_theme <- theme(
+figure_theme <-  theme(
   plot.title = element_text(
-    size=20, 
-    face='bold', 
-    margin = margin(10, 0, 10, 0), 
+    size = 15, 
+    face = 'bold', 
+    margin = margin(8, 0, 8, 0), 
     hjust = 0.5
   ),
   legend.text = element_text(
-    size=15),  
-  legend.title=element_blank(),
-  axis.text.y=element_text(
+    size=10),  
+  legend.title = element_blank(),
+  axis.text.y = element_text(
     angle=0, 
-    size=12, 
+    size=9, 
     vjust=0.5),
   axis.title.x = element_blank(),
   axis.title.y = element_text(
-    size = 15, 
+    size = 12, 
     face='bold', 
     vjust=-0.5, 
-    margin = margin(0, 10, 0, 0)),
+    margin = margin(0, 8, 0, 0)),
   axis.text.x=element_blank(),
   axis.ticks.x=element_blank(),
   aspect.ratio = 2/1
@@ -37,20 +35,16 @@ figure_theme <- theme(
 ###########
 list_of_conditions <- c(
   'Mock',
-  'bRSV dNS1 0.001-24',
-  'bRSV dNS2 0.01-24',
-  'bRSV dNS1/2 0.001-24'
-  )
+  'bRSV dSH 1-24'
+)
 list_of_colours <- c(
   '#999999', 
-  '#ffc034', 
-  '#9a6a00', 
-  '#009e73'
-  )
+  '#6d006d'
+)
 ###########
 
 # data prep -------------------------
-mdbk_bRSVN <- read.csv(
+mdbk_bRSVN <- fread(
   paste('Data/', 
         
         ############
@@ -64,8 +58,8 @@ mdbk_bRSVN <- read.csv(
 # all dataset normalisation - reverse values so mock low and infection high
   
   ###########
-  filter(CellLine == 'MDBK',
-         Target == 'bRSV_N',
+  filter(Target == 'bRSV_N',
+         Cell_line == "MDBK",
          Condition %in% list_of_conditions
          ) %>%
   ###########
@@ -77,11 +71,11 @@ mdbk_bRSVN <- read.csv(
     control_mean_ct = mean(
       Ct[Condition == list_of_conditions[1]], 
       na.rm = T),
-    log2_dCt = 2^ (- (Ct - mock_mean_ct)),
+    log2_dCt = 2^ (- (Ct - control_mean_ct)),
     control_mean_log = mean(
       log2_dCt[Condition == list_of_conditions[1]],
       na.rm = T),
-    Value_norm = log2_ddct / control_mean_log
+    Value_norm = log2_dCt / control_mean_log
     )
                          
 mdbk_bRSVN
@@ -93,8 +87,6 @@ plot(lm(Value_norm~Condition, mdbk_bRSVN))
 # test normality
 shapiro.test(mdbk_bRSVN$Value_norm[1:3])
 shapiro.test(mdbk_bRSVN$Value_norm[4:6])
-shapiro.test(mdbk_bRSVN$Value_norm[7:9])
-shapiro.test(mdbk_bRSVN$Value_norm[10:12])
 
 plot(residuals(lm(Value_norm~Condition, mdbk_bRSVN)))
 shapiro.test(residuals(lm(Value_norm~Condition, mdbk_bRSVN)))
@@ -122,11 +114,8 @@ list_of_conditions
 
 ###########
 p_val <- c(
-  0.8031417,
-  0.9655795,
-  0.0564754
+  0.0464754
   )
-range_y <- 8
 plot_title <- 'MDBK - bRSV N'
 y_axis_title <- 'Relative mRNA Levels'
 ###########
@@ -136,10 +125,10 @@ textsize_values <- c()
 for (value in p_val) {
   if (value > 0.05) {p
     textsize_values <- append(
-      textsize_values, 4)
+      textsize_values, 3)
   } else {
     textsize_values <- append(
-      textsize_values, 5)
+      textsize_values, 4)
   }
 }
 
@@ -164,17 +153,18 @@ plot_mdbk_bRSVN <- ggplot(
   scale_fill_manual(
     breaks = list_of_conditions,
     values = list_of_colours) +
+  theme_bw() +
   figure_theme +
   labs(
     title = plot_title,
     y = y_axis_title,
     x = NULL
   ) +
-  scale_y_log10(
-    labels = trans_format("log10", 
-                          math_format(10^.x)),
-    breaks = trans_breaks("log10", 
-                          function(x) 10^x)
+  scale_y_log10(labels = trans_format("log10", 
+                                      math_format(10^.x)),
+                breaks = trans_breaks("log10", 
+                                      function(x) 10^x, n = 7),
+                limits = c(10^-1, 10^9)
   ) +
   annotation_logticks(sides='l') +
  
@@ -183,32 +173,11 @@ plot_mdbk_bRSVN <- ggplot(
       list_of_conditions[1], 
       list_of_conditions[2])), 
     annotation = p_val[1], 
-    y_position = 0.93*range_y - 2*(range_y*0.075), 
+    y_position = 7, 
     tip_length = 0, 
     vjust= -0.2, 
     size = 0.7, 
-    textsize = textsize_values[1]) +
-  geom_signif(
-    comparisons = list(c(
-      list_of_conditions[1], 
-      list_of_conditions[3])), 
-    annotation = p_val[2], 
-    y_position = 0.93*range_y - 1*(range_y*0.075), 
-    tip_length = 0, 
-    vjust= -0.2, 
-    size = 0.7, 
-    textsize = textsize_values[2]) +
-  geom_signif(
-    comparisons = list(c(
-      list_of_conditions[1], 
-      list_of_conditions[4])), 
-    annotation = p_val[3], 
-    y_position = 0.93*range_y - 0*(range_y*0.075), 
-    tip_length = 0, 
-    vjust= -0.2, 
-    size = 0.7, 
-    textsize = textsize_values[3])
-
+    textsize = textsize_values[1])
 
 plot_mdbk_bRSVN
 
@@ -216,7 +185,7 @@ plot_mdbk_bRSVN
 
 ###########
 dpi <- 600
-width <- 20
+width <- 16
 height <- 20
 file_name <- 'mdbk_bRSVN'
 ###########

@@ -2,52 +2,49 @@
 library(tidyverse)
 library(ggsignif)
 library(data.table)
+library(scales)
 
-figure_theme <- theme(
+figure_theme <-  theme(
   plot.title = element_text(
-    size=20, 
-    face='bold', 
-    margin = margin(10, 0, 10, 0), 
+    size = 15, 
+    face = 'bold', 
+    margin = margin(8, 0, 8, 0), 
     hjust = 0.5
   ),
   legend.text = element_text(
-    size=15),  
-  legend.title=element_blank(),
-  axis.text.y=element_text(
+    size=10),  
+  legend.title = element_blank(),
+  axis.text.y = element_text(
     angle=0, 
-    size=12, 
+    size=9, 
     vjust=0.5),
   axis.title.x = element_blank(),
   axis.title.y = element_text(
-    size = 15, 
+    size = 12, 
     face='bold', 
     vjust=-0.5, 
-    margin = margin(0, 10, 0, 0)),
+    margin = margin(0, 8, 0, 0)),
   axis.text.x=element_blank(),
   axis.ticks.x=element_blank(),
   aspect.ratio = 2/1
 )
 #########
-# change 'mdbk_bi1', 'MDBK', 'bIFIT1', 'model_lmsc1',
+# change 'mdbk_bi1', 'MDBK', 'bIFIT1', 'model_lmscb1',
 #########
 
 ###########
 list_of_conditions <- c(
   'Mock',
-  'cbRSV dNS1 0.001-24',
-  'cbRSV dNS2 0.01-24',
-  'cbRSV dNS1/2 0.001-24'
-  )
+  'bRSV dSH 1-24'
+)
 list_of_colours <- c(
   '#999999', 
-  '#ffc034', 
-  '#9a6a00', 
-  '#009e73'
-  )
+  '#ffc034'
+)
 ###########
 
 # data prep ----
-mdbk_bi1 <- read.csv(
+mdbk_bi1 <- fread(
   paste('Data/', 
         ############
         'copy_number_extrapolation_data', 
@@ -58,23 +55,23 @@ mdbk_bi1 <- read.csv(
   ) %>%
   
   ###########
-  filter(CellLine == 'MDBK',
+  filter(Cell_line == 'MDBK',
          Target == 'bIFIT1',
          Condition %in% list_of_conditions
          ) %>%
   ###########
-
   arrange(match(
     Condition, 
-    list_of_conditions)) %>%
+    list_of_conditions))
+mdbk_bi1 <- mdbk_bi1 %>% 
   mutate(
     Copy_number = 10^predict(
-      model_lmsc1, 
+      model_lmscb1, 
       newdata = mdbk_bi1),
     Control_mean = mean(
-      Value[Condition == list_of_conditions[1]], 
+      Copy_number[Condition == list_of_conditions[1]], 
       na.rm = T),
-    Value_norm = Value / Control_mean
+    Value_norm = Copy_number / Control_mean
     )
 
 mdbk_bi1
@@ -86,8 +83,6 @@ plot(lm(Value_norm~Condition, mdbk_bi1))
 # test normality
 shapiro.test(mdbk_bi1$Value_norm[1:3])
 shapiro.test(mdbk_bi1$Value_norm[4:6])
-shapiro.test(mdbk_bi1$Value_norm[7:9])
-shapiro.test(mdbk_bi1$Value_norm[10:12])
 
 plot(residuals(lm(Value_norm~Condition, mdbk_bi1)))
 shapiro.test(residuals(lm(Value_norm~Condition, mdbk_bi1)))
@@ -113,12 +108,8 @@ list_of_conditions
 
 ###########
 p_val <- c(
-  0.8031417,
-  0.9655795,
   0.0564754
   )
-range_y <- 100
-breaks_y <- 20
 plot_title <- 'bIFIT1 - MDBK'
 y_axis_title <- 'Relative mRNA Levels'
 ###########
@@ -136,69 +127,52 @@ for (value in p_val) {
 }
 
 plot_mdbk_bi1 <- ggplot(
-  mdbk_bi1, aes(
+  mdbk_bi1, 
+  aes(
     x = Condition, 
-    y = Value_norm, 
+    y = Value_norm,
     fill = Condition)) +
   geom_violin(
-    trim = F,
+    trim = FALSE,
     alpha = 0.5,
     scale = 'width',
     adjust = 0.7) +
   stat_summary(
     fun.data = mean_se, 
     fun.args = list(mult=1), 
-    geom="pointrange", 
-    color="black",
+    geom = "pointrange", 
+    color = "black",
     show.legend = F) +
   scale_x_discrete(
     limits = list_of_conditions) +
   scale_fill_manual(
     breaks = list_of_conditions,
-                    
     values = list_of_colours) +
+  theme_bw() +
   figure_theme +
   labs(
     title = plot_title,
     y = y_axis_title,
     x = NULL
   ) +
-  coord_cartesian(ylim = c(0, range_y)) +
-  scale_y_continuous(
-    breaks= seq(0, 
-                range_y, 
-                breaks_y)) +
-  
+  scale_y_continuous(trans = log2_trans(),
+                     breaks = trans_breaks("log2", function(x) 2^x, n = 8),
+                     labels = trans_format("log2", math_format(2^.x)),
+                     limits = c(2^-7,2^9),
+                     sec.axis = sec_axis(trans = identity,
+                                         breaks = c(2^-6, 2^-4, 2^-2, 2^0, 2^2, 2^4, 2^6, 2^8),
+                                         labels = c(0.016, 0.062, 0.25, 1, 4, 16, 64, 256)
+                     )) +
   geom_signif(
     comparisons = list(c(
       list_of_conditions[1], 
       list_of_conditions[2])), 
     annotation = p_val[1], 
-    y_position = 0.93*range_y - 2*(range_y*0.075), 
+    y_position = 7, 
     tip_length = 0, 
     vjust= -0.2, 
     size = 0.7,
-    textsize = textsize_values[1]) +
-  geom_signif(
-    comparisons = list(c(
-      list_of_conditions[1], 
-      list_of_conditions[3])), 
-    annotation = p_val[2], 
-    y_position = 0.93*range_y - 1*(range_y*0.075), 
-    tip_length = 0, 
-    vjust= -0.2, 
-    size = 0.7, 
-    textsize = textsize_values[2]) +
-  geom_signif(
-    comparisons = list(c(
-      list_of_conditions[1], 
-      list_of_conditions[4])), 
-    annotation = p_val[3], 
-    y_position = 0.93*range_y - 0*(range_y*0.075), 
-    tip_length = 0, 
-    vjust= -0.2, 
-    size = 0.7, 
-    textsize = textsize_values[3])
+    textsize = textsize_values[1])
 
 
 plot_mdbk_bi1

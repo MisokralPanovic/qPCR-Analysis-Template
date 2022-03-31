@@ -1,0 +1,232 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Data Loadnig
+
+```{r loading, include=F, echo=F}
+library(tidyverse)
+library(ggsignif)
+library(data.table)
+
+plot_theme <- theme(
+  plot.title = element_text(
+    size = 20, 
+    face = 'bold', 
+    margin = margin(10, 0, 10, 0), 
+    hjust = 0.5
+  ),
+  legend.text = element_text(
+    size=15),  
+  legend.title = element_blank(),
+  axis.text.y = element_text(
+    angle=0, 
+    size=12, 
+    vjust=0.5),
+  axis.title.x = element_blank(),
+  axis.title.y = element_text(
+    size = 15, 
+    face='bold', 
+    vjust=-0.5, 
+    margin = margin(0, 10, 0, 0)),
+  axis.text.x=element_blank(),
+  axis.ticks.x=element_blank(),
+  aspect.ratio = 2/1
+)
+```
+
+```{r data_loading_filtering, echo = F}
+list_of_conditions <- c(
+  'Mock',
+  'phRSV 1-24',
+  'bIFNa 5-6'
+  )
+list_of_colours <- c(
+  '#999999', 
+  '#ffc034', 
+  '#9a6a00'
+  )
+housekeeping_gene_data <- read.csv(
+  paste('../Data/Templates/', 
+        ############
+        'ct_data', 
+        ############
+        
+        '.csv', 
+        sep = ''
+        )
+  ) %>% 
+                                       
+  ########################
+  filter(
+    Target == "bGAPDH",
+    Condition %in% list_of_conditions
+         )
+  ########################
+b24_1 <- read.csv(
+  paste('../Data/Templates/', 
+        
+        ############
+        'copy_number_extrapolation_data', 
+        ############
+        
+        '.csv', 
+        sep = ''
+        )
+  ) %>%  
+  
+  ###########
+  filter(Target == 'bIFIT1',
+         Condition %in% list_of_conditions
+         )
+  ###########
+scb1 <- read.csv(
+  paste('../Data/Templates/', 
+        
+        ############
+        'standard_curves_data', 
+        ############
+        
+        '.csv', 
+        sep = '')
+) %>%
+  
+  ###########
+filter(Target == 'bIFIT1',
+       Primer_set == 'PS11'
+)
+```
+
+# Data Manipulation
+
+```{r data_manipulation}
+model_lmscb1 <- lm(
+  log10(Copy_number)~Ct, 
+  data = scb1
+)
+housekeeping_gene_data <-  housekeeping_gene_data %>% 
+  mutate(
+    control_mean = mean(
+       Ct[Condition == list_of_conditions[1]],
+       na.rm = T),
+    log2_dCt = 2^ (- (Ct - control_mean)),
+    control_mean_log = mean(
+      log2_dCt[Condition == list_of_conditions[1]],
+      na.rm = T),
+    Value_norm = log2_dCt / control_mean_log
+    ) %>%
+  group_by(Condition) %>%
+  mutate(mean_Ct = mean(Ct)) %>%
+  ungroup() %>%
+  arrange(match(
+    Condition, 
+    list_of_conditions))
+b24_1 <- b24_1 %>% 
+  arrange(
+  match(Condition, 
+        list_of_conditions)) %>%
+  mutate(
+    Copy_number = 10^predict(model_lmscb1, 
+                             newdata = b24_1),
+    Factor = housekeeping_gene_data$mean_Ct,
+    Copy_number_mod = Copy_number / Factor,
+    Control_mean = mean(
+      Copy_number_mod[Condition == list_of_conditions[1]], 
+      na.rm = T
+      ),
+    Value_norm = Copy_number_mod / Control_mean,
+    Value_norm_old = Copy_number / Control_mean
+    ) 
+b24_1  
+```
+
+# Statistical Analysis
+
+# Data Visualisation
+
+```{r plotting_parameters}
+p_val <- c(
+  0.8031417,
+  0.9655795
+  )
+range_y <- 5
+breaks_y <- 1
+plot_title <- 'bIFIT1'
+y_axis_title <- 'Relative mRNA Levels'
+```
+
+```{r plotting, include=F, echo=F}
+textsize_values <- c()
+
+for (value in p_val) {
+  if (value > 0.05) {
+    textsize_values <- append(
+      textsize_values, 4)
+  } else {
+    textsize_values <- append(
+      textsize_values, 5)
+  }
+}
+
+plot_b24_1 <- ggplot(
+  b24_1, 
+  aes(
+    x = Condition, 
+    y = Value_norm,
+    fill = Condition)) +
+  geom_violin(
+    trim = FALSE,
+    alpha = 0.5,
+    scale = 'width',
+    adjust = 0.7) +
+  stat_summary(
+    fun.data = mean_se, 
+    fun.args = list(mult=1), 
+    geom = "pointrange", 
+    color = "black",
+    show.legend = F) +
+  scale_x_discrete(
+    limits = list_of_conditions) +
+  scale_fill_manual(
+    breaks = list_of_conditions,
+    values = list_of_colours) +
+  plot_theme +
+  labs(
+    title = plot_title,
+    y = y_axis_title,
+    x = NULL
+  ) +
+  coord_cartesian(ylim = c(0, range_y)) +
+  scale_y_continuous(
+    breaks= seq(0, 
+                range_y, 
+                breaks_y))
+```
+
+### Significance bars
+
+```{r significance_bars, echo=F}
+plot_b24_1 +
+  geom_signif(
+    comparisons = list(c(
+      list_of_conditions[1], 
+      list_of_conditions[2])), 
+    annotation = p_val[1], 
+    y_position = 0.93*range_y - 1*(range_y*0.075), 
+    tip_length = 0, 
+    vjust= -0.2, 
+    size = 0.7,
+    textsize = textsize_values[1]) +
+              
+  geom_signif(
+    comparisons = list(c(
+      list_of_conditions[1], 
+      list_of_conditions[3])), 
+    annotation = p_val[2], 
+    y_position = 0.93*range_y - 0*(range_y*0.075), 
+    tip_length = 0, 
+    vjust= -0.2, 
+    size = 0.7, 
+    textsize = textsize_values[2])
+```

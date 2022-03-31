@@ -1,0 +1,179 @@
+---
+title: "Test Report"
+author: "Michal"
+date: "Last edited: `r format(Sys.time(), '%Y %m %d')`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    toc_float:
+      smooth_scroll: true
+      collapsed: true
+params:
+    gene: IFIT1
+---
+```{css, echo=F}
+<style>
+#header {
+  color: #800000;
+  opacity: 0.6;
+  font-size: 20px;
+}
+h1.title {
+  color: blue;
+  font-family: Calibri;
+}
+h4.author {
+  color: red;
+  font-family: Calibri;
+}
+h4.date {
+  color: green;
+  font-family: Calibri;
+}
+<!--For TABLE OF CONTENTS formatting-->
+#TOC {
+  color: #123123;
+  font-family: Calibri;
+  font-size: 16px;
+  border-color: #708090;
+}
+body {
+  color: blue;
+  font-family: Calibri;
+  background-color: #F5F5F5;
+}
+<!--For chunk section formatting-->
+pre {
+  color: #708090;
+  background-color: #F8F8FF;
+}
+</style>
+```
+#Styles
+html_document: **indent** css: (location of the .css file) style.css (keep it in the same directory for example) 
+
+# header 1
+## header 2
+### header 3
+
+Adding sentenses is simple, such as adding `highlighted text` or `inline text`
+
+Every new continous line acts as new sentense.
+
+Formatting text:
+  **bold** or __bold__
+  *italics* or _italics_
+  ~~strikethrought~~
+
+Also adding [links to websites](https://www.google.co.uk) or links directly <https://www.google.co.uk>
+Add images like this ![](https://i.natgeofe.com/n/4bf47147-ce80-49c6-98ae-52f63349045f/67655_3x4.jpg)
+
+#### bulleted lists
+1. A list
+  - list
+    + item
+      - item2
+    * item3
+2. still list
+
+
+#### globaly modifying report chunks
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align = "center", echo = TRUE, error = T)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r}
+# Text in code chunk
+print("Hello World")
+print("To make new chunk use 'ctrl alt I'")
+```
+```{r}
+x <- "variable"
+```
+
+
+## Use variable from code in text
+Here we ask for the `r x`
+
+## Changing figure dimensions in the report
+specify them in the chunk header | like fig.width = 3, fig.height = 3 | or | fig.dim = c(3,3) |
+```{r figure_plot, fig.width = 3, fig.heigth = 3}
+hist(mtcars$mpg)
+```
+
+
+```{r figure_plot_2, fig.dim = c(3,3)}
+hist(mtcars$mpg)
+```
+## changing figure output in the report
+out.width
+
+#
+out.higth
+```{r figure_plot_3, out.width = "50%"}
+hist(mtcars$mpg)
+```
+## aligning figure in report
+fig.align = "left", "right", "center"
+```{r figure_plot_4, fig.align = "left"}
+hist(mtcars$mpg)
+```
+## adding caption to figures
+fig.cap = "caption"
+```{r figure_plot_5, fig.cap = "this is a caption of the figure"}
+hist(mtcars$mpg)
+```
+
+# Tables
+mostly use for summary tables, as you cannot modify it later
+```{r table}
+library(tidyverse)
+library(knitr)
+kable(mtcars %>% select(mpg, cyl, hp), 
+      col.names = c("MPG", "CYL", "HP"),
+      align = c("ccc"),
+      caption = "this is a fancy table")
+```
+
+
+
+## codechunks options
+results if FALSE:  
+- include = F - run without including anything  
+- echo = F - runs without including console output  
+- eval = F - incluce the code chunk but doesnt run it  
+- warning = F - warning messages are suppresed  
+- message = F - messages are excluded (eg package loading info)  
+- error = T - knits everything although some chunks give errors  
+
+if collapse = TRUE then code chunk and any error message / console output will be in one cell
+
+# using parameters
+in YAML header do  
+params:  
+  - parameter: Name_of_parameter  
+then in the code you can ad params$parameter to get the value
+
+you can add  r params$parameter to chunk name and text anyplace
