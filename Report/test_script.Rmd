@@ -1,0 +1,129 @@
+---
+title: "Experiment title"
+subtitle: "Copy number GAPDH normalised"
+author: "Michal"
+date: "Last edited: `r format(Sys.time(), '%Y-%m-%d')`"
+output: html_document
+params:
+    target_gene: bIFIT1
+    housekeeping_gene: bGAPDH
+    conditions: !r c('Mock', 'phRSV 1-24','bIFNa 5-6')
+    colors: !r c('#999999', '#ffc034', '#9a6a00')
+    statistics: "Normal distribution and equal variance"
+    pvals: !r c(0.9935156, 0.1817141)
+    range: 14
+    breaks: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r reading_ext_script, include=FALSE, cache=FALSE}
+knitr::read_chunk("../Report/Templates/external_chunk.R")
+```
+
+# Data Loadnig
+
+```{r loading, include=F, echo=F}
+library(tidyverse)
+library(ggsignif)
+library(scales)
+library(data.table)
+library(knitr)
+```
+
+```{r, plot_theme, include=F, echo=F}
+```
+
+
+```{r data_loading_filtering, echo = T, message=FALSE}
+housekeeping_gene_data <- read_csv('../Data/Templates/ct_data.csv') %>% 
+  filter(Target == params$housekeeping_gene, Condition %in% params$conditions)
+    
+target_data <- read_csv('../Data/Templates/copy_number_extrapolation_data.csv') %>%
+  filter(Target == params$target_gene, Condition %in% params$conditions)
+      
+scdata <- read_csv('../Data/Templates/standard_curves_data.csv') %>%
+  filter(Target == params$target_gene)
+```
+
+# Data Manipulation
+
+## Linear Model Creation
+
+```{r linear_model_creation}
+model_lmscdata <- lm(log10(Copy_number)~Ct,  data = scdata)
+```
+
+## Linear Model Figure
+
+```{r, lm_figure_loading, include=F, echo=F}
+```
+
+```{r lm_figure, echo=FALSE}
+plot_scdata
+```
+
+## Housekeeping Log2 Data Generation
+
+```{r housekeeping_data}
+housekeeping_gene_data <-  housekeeping_gene_data %>% 
+  mutate(control_mean = mean(Ct[Condition == params$conditions[1]], na.rm = T),
+        log2_dCt = 2^ (- (Ct - control_mean)),
+        control_mean_log = mean(log2_dCt[Condition == params$conditions[1]], na.rm = T),
+        Value_norm = log2_dCt / control_mean_log) %>%
+  group_by(Condition) %>%
+  mutate(mean_Ct = mean(Ct)) %>%
+  ungroup() %>%
+  arrange(match(Condition, params$conditions))
+```
+
+## Extrapolation From Standard Curve and Factorisation by Housekeeping Gene Data
+
+```{r data_manipulation}
+target_data <- target_data %>% 
+  arrange(match(Condition, params$conditions)) %>%
+  mutate(Copy_number = 10^predict(model_lmscdata, newdata = target_data),
+         Factor = housekeeping_gene_data$mean_Ct,
+         Copy_number_mod = Copy_number / Factor,
+         Control_mean = mean(Copy_number_mod[Condition == params$conditions[1]], na.rm = T),
+         Value_norm = Copy_number_mod / Control_mean)
+```
+
+```{r kable_final_table, echo = F}
+kable(target_data, caption = "Final Table")
+```
+
+# Statistics
+## `r params$statistic`
+```{r statistics}
+library(DTK, quietly = T)
+anova(lm(Value_norm~Condition, target_data))
+TukeyHSD(aov(Value_norm~Condition, target_data))
+```
+
+# Data Visualisation
+```{r, final_plotting, include=F, echo=F}
+```
+
+```{r significance_bars, echo=F}
+plot_target_data +
+  geom_signif(
+    comparisons = list(c(
+      params$conditions[1], 
+      params$conditions[2])), 
+    annotation = params$pvals[1], 
+    y_position = 0.93*params$range - 1*(params$range*0.075), 
+    tip_length = 0, vjust= -0.2, size = 0.7,
+    textsize = textsize_values[1]) +
+              
+  geom_signif(
+    comparisons = list(c(
+      params$conditions[1], 
+      params$conditions[3])), 
+    annotation = params$pvals[2], 
+    y_position = 0.93*params$range - 0*(params$range*0.075), 
+    tip_length = 0, vjust= -0.2, size = 0.7, 
+    textsize = textsize_values[2])
+```
