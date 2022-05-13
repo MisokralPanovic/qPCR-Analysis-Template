@@ -1,3 +1,5 @@
+`%notin%` <- Negate(`%in%`)
+
 library(broom)
 
 broom:glance(model)
