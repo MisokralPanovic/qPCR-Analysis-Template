@@ -58,7 +58,7 @@ Link to stats pipeline?
 
 ## Libraries (maybe put them when they are used?)
 
-```{r required_libraries}
+```{r required_libraries, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(data.table)
 library(ggsignif)
@@ -81,14 +81,54 @@ standard_curve_data <- fread('../Data/standard_curves_data.csv') %>%
          Primer_set == params$primer_set)
 ```
 
-## Model Production
+```{r data_loading_standard_curve_display, echo=FALSE, warning=FALSE}
+standard_curve_data |> kable()
+```
 
+## Linear Model Production
+
+### Construct Linear Model
 ```{r standard_curve_model}
-lm(log10(Copy_number)~Ct, data = standard_curve_data) # create a model
-
-model_standard_curve <- lm(log10(Copy_number)~Ct, data = standard_curve_data) # save it to a variabel
+model_standard_curve <- lm(log10(Copy_number)~Ct, data = standard_curve_data)
 
 ```
+
+```{r standard_curve_model_display, echo=FALSE, warning=FALSE}
+lm(log10(Copy_number)~Ct, data = standard_curve_data)
+```
+
+### Construct a Prediction Based on the Linear Model
+
+```{r standard_curve_model_prediction}
+prediction_model_standard_curve <- 10^predict(
+  model_standard_curve, 
+  interval = 'prediction'
+  )
+
+```
+```{r standard_curve_model_prediction_display, echo=FALSE, warning=FALSE}
+10^predict(
+  model_standard_curve, 
+  interval = 'prediction'
+  ) |> kable()
+```
+
+
+```{r standard_curve_dataset_bind}
+data_combined_standard_curve <- cbind(
+  standard_curve_data,
+  prediction_model_standard_curve
+  ) # save it to a variabel
+
+```
+```{r standard_curve_dataset_bind_display, echo=FALSE, warning=FALSE}
+cbind(
+  standard_curve_data,
+  prediction_model_standard_curve
+  ) |> kable()
+```
+
+
 ### Calculate Amplification Efficiency
 
 Some text about what the fuck are we doing
@@ -100,15 +140,6 @@ Put amplification efficiency equation
 ```
 
 ```{r standard_curve_amplification_efficiency}
-paste(
-  round(
-    (10^(-1/ lm(Ct~log10(Copy_number), 
-                data = standard_curve_data)[[1]][2]) -1)*100, 
-    digits = 2), 
-  '% Amplification Efficiency', 
-  sep = ''
-  ) # calculate the amplification efficiency
-
 efficiency_standard_curve <- paste(
   round(
     (10^(-1/ lm(Ct~log10(Copy_number), 
@@ -120,9 +151,117 @@ efficiency_standard_curve <- paste(
 
 ```
 
+```{r standard_curve_amplification_efficiency_display, echo=FALSE, warning=FALSE}
+paste(
+  round(
+    (10^(-1/ lm(Ct~log10(Copy_number), 
+                data = standard_curve_data)[[1]][2]) -1)*100, 
+    digits = 2), 
+  '% Amplification Efficiency', 
+  sep = ''
+  )
+
+```
+
 ## Figure
 
+### Constructing Figure
 
+```{r standard_curve_figure_parameters}
+plot_title_standardCurve <- paste(params$target_gene, 
+                    '-', 
+                    params$primer_set,
+                    'Standard Curve', 
+                    sep = " ")
+x_annotation_position_standardCurve <- 1000000
+y_annotation_position_standardCurve <- 37.5
+top_range_standardCurve <- 40
+y_axis_title_standardCurve <- 'Cycle Threshold'
+x_axis_title_standardCurve <- 'Copy Number'
+```
+
+```{r initial_ggplot}
+plot_standard_curve <- ggplot(
+  data = data_combined_standard_curve,
+  mapping = aes(x = Copy_number,
+                y = Ct)) +
+  geom_point() +
+  stat_smooth(method = lm) +
+  labs(
+    title = plot_title_standardCurve,
+    y = x_axis_title_standardCurve,
+    x = y_axis_title_standardCurve
+  )
+```
+
+```{r y_axis}
+plot_standard_curve <- plot_standard_curve +
+  scale_y_continuous(
+    breaks = seq(from = 0, 
+                 to = top_range_standardCurve, 
+                 by = 10),
+    limits = c(0,top_range_standardCurve)
+  )
+```
+
+```{r log_scale}
+plot_standard_curve <- plot_standard_curve +
+  scale_x_log10(
+    labels = trans_format("log10", 
+                          math_format(10^.x)),
+    breaks = trans_breaks("log10", 
+                          function(x) 10^x)
+  ) +
+  annotation_logticks(sides='b')
+```
+
+```{r theme}
+plot_standard_curve <- plot_standard_curve +
+  theme_bw() +
+  theme(
+  plot.title = element_text(
+    size = 15, 
+    face = 'bold', 
+    margin = margin(8, 0, 8, 0), 
+    hjust = 0.5
+  ),
+  axis.text.y = element_text(
+    angle = 0, 
+    size = 9, 
+    vjust = 0.5),
+  axis.text.x.bottom = element_text(
+    angle = 0, 
+    size = 9, 
+    vjust = 0.5),
+  axis.title.x = element_text(
+    size = 12, 
+    face = 'bold', 
+    vjust = -0.5, 
+    margin = margin(0, 8, 0, 0)),
+  axis.title.y = element_text(
+    size = 12, 
+    face='bold', 
+    vjust=-0.5, 
+    margin = margin(0, 8, 0, 0)),
+  aspect.ratio = 1/2
+)
+```
+
+```{r annotation}
+plot_standard_curve <- plot_standard_curve +
+  annotate('text',
+           y = y_annotation_position_standardCurve, 
+           x = x_annotation_position_standardCurve, 
+           label = efficiency_standard_curve, 
+           size = 5)
+```
+
+
+```{r standard_curve_plot_display, , echo=FALSE, warning=FALSE}
+plot_standard_curve
+```
+
+### Saving Figure
 
 # 2. Housekeeping Gene Control
 
