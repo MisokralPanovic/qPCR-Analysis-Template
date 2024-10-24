@@ -1,0 +1,276 @@
+---
+title: "Example of qPCR Pipeline Usage"
+subtitle: "Copy number GAPDH normalised dataset"
+author: "Michal Varga"
+date: "Last edited: `r format(Sys.time(), '%Y-%m-%d')`"
+output: rmarkdown::github_document
+params:
+    target_gene: bIFIT1
+    primer_set: PS11
+    housekeeping_gene: bGAPDH
+    conditions: !r c('Mock', 'phRSV 1-24','bIFNa 5-6')
+    colors: !r c('#999999', '#ffc034', '#9a6a00')
+    statistics: "Normal distribution and equal variance"
+    pvals: !r c(0.9935156, 0.1817141)
+    range: 14
+    breaks: 2
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r reading_ext_script, include=FALSE, cache=FALSE, eval=FALSE}
+knitr::read_chunk("../Report/Templates/external_chunk.R")
+```
+
+```{r knitr_libraries, include=F}
+library(knitr)
+library(kableExtra)
+library(rmarkdown)
+```
+
+# Introduction
+
+Purpose: 
+
+based on scripts:
+
+-   standard curve
+-   control gene Ct based
+-   Copy number GAPDH normalised dataset
+
+parameters incuded in script:
+
+-   `target_gene:` bIFIT1
+-   `housekeeping_gene:` bGAPDH
+-   `conditions:` !r c('Mock', 'phRSV 1-24','bIFNa 5-6')
+-   `colors:` !r c('#999999', '#ffc034', '#9a6a00')
+-   `statistics:` "Normal distribution and equal variance"
+-   `pvals:` !r c(0.9935156, 0.1817141)
+-   `range:` 14
+-   `breaks:` 2
+
+Link to stats pipeline?
+
+## Libraries (maybe put them when they are used?)
+
+```{r required_libraries}
+library(tidyverse)
+library(data.table)
+library(ggsignif)
+library(scales)
+```
+
+# 1. Standard Curve
+
+## Introduction
+
+Some text about what the fuck
+
+## Data Loading
+
+Load `standard_curves_data.csv` from `/Data` folder, and filter the target gene and primer set used based on the declared parameters in YAML.
+
+```{r data_loading_standard_curve}
+standard_curve_data <- fread('../Data/standard_curves_data.csv') %>%
+  filter(Target == params$target_gene,
+         Primer_set == params$primer_set)
+```
+
+## Model Production
+
+```{r standard_curve_model}
+lm(log10(Copy_number)~Ct, data = standard_curve_data) # create a model
+
+model_standard_curve <- lm(log10(Copy_number)~Ct, data = standard_curve_data) # save it to a variabel
+
+```
+### Calculate Amplification Efficiency
+
+Some text about what the fuck are we doing
+
+Put amplification efficiency equation
+
+```math
+\mbox{Amplification Efficiency} = 10^{-1/\mbox{slope}}-1
+```
+
+```{r standard_curve_amplification_efficiency}
+paste(
+  round(
+    (10^(-1/ lm(Ct~log10(Copy_number), 
+                data = standard_curve_data)[[1]][2]) -1)*100, 
+    digits = 2), 
+  '% Amplification Efficiency', 
+  sep = ''
+  ) # calculate the amplification efficiency
+
+efficiency_standard_curve <- paste(
+  round(
+    (10^(-1/ lm(Ct~log10(Copy_number), 
+                data = standard_curve_data)[[1]][2]) -1)*100, 
+    digits = 2), 
+  '% Amplification Efficiency', 
+  sep = ''
+  ) # save it as a variable
+
+```
+
+## Figure
+
+
+
+# 2. Housekeeping Gene Control
+
+## Introduction
+
+Some text about what the fuck
+
+## Data Loading
+
+```{r data_loading_housekeeping, eval=FALSE}
+housekeeping_gene_data <- fread('../Data/ct_data.csv') %>% 
+  filter(Target == params$housekeeping_gene, Condition %in% params$conditions)
+```
+
+## Processing Data
+
+
+## Make Factors
+
+
+
+# 3. Factorised Copy Number Extrapolation
+
+## Introduction
+
+Some text about what the fuck
+
+## Data loading and filtering
+
+```{r data_loading_filtering, eval=FALSE}
+target_data <- fread('../Data/copy_number_extrapolation_data.csv') %>%
+  filter(Target == params$target_gene, Condition %in% params$conditions)
+```
+
+## Copy number extrapolation
+
+
+## Factorisation based on housekeeping gene levels
+
+
+## Statistics
+
+
+## Plotting
+
+
+# Libraries and Data Loading
+
+the libraries needed and why
+
+```{r, plot_theme, eval=FALSE}
+```
+
+# Data Manipulation
+
+## Linear Model Creation
+
+```{r linear_model_creation, eval=FALSE}
+model_lmscdata <- lm(log10(Copy_number)~Ct,  data = scdata)
+```
+
+## Linear Model Figure
+
+```{r, lm_figure_loading, echo=F, eval=FALSE}
+```
+
+```{r lm_figure, eval=FALSE}
+plot_scdata
+```
+
+## Housekeeping Log2 Data Generation
+
+```{r housekeeping_data, eval=FALSE}
+housekeeping_gene_data <-  housekeeping_gene_data %>% 
+  mutate(control_mean = mean(Ct[Condition == params$conditions[1]], na.rm = T),
+        log2_dCt = 2^ (- (Ct - control_mean)),
+        control_mean_log = mean(log2_dCt[Condition == params$conditions[1]], na.rm = T),
+        Value_norm = log2_dCt / control_mean_log) %>%
+  group_by(Condition) %>%
+  mutate(mean_Ct = mean(Ct)) %>%
+  ungroup() %>%
+  arrange(match(Condition, params$conditions))
+```
+
+## Extrapolation From Standard Curve and Factorisation by Housekeeping Gene Data
+
+```{r data_manipulation, eval=FALSE}
+target_data <- target_data %>% 
+  arrange(match(Condition, params$conditions)) %>%
+  mutate(Copy_number = 10^predict(model_lmscdata, newdata = target_data),
+         Factor = housekeeping_gene_data$mean_Ct,
+         Copy_number_mod = Copy_number / Factor,
+         Control_mean = mean(Copy_number_mod[Condition == params$conditions[1]], na.rm = T),
+         Value_norm = Copy_number_mod / Control_mean)
+```
+
+```{r kable_final_table, eval=FALSE}
+kable(target_data, caption = "Final Table")
+```
+
+## Dataset Save
+
+```{r dataset_save, eval=FALSE}
+print("SAVE THE DATAAA")
+```
+
+Data was saved to **HELL**
+
+# Statistics
+
+## `r params$statistic`
+
+```{r statistics, eval=FALSE}
+library(DTK, quietly = T)
+anova(lm(Value_norm~Condition, target_data))
+TukeyHSD(aov(Value_norm~Condition, target_data))
+```
+
+# Data Visualisation
+
+```{r, final_plotting, eval=FALSE}
+```
+
+```{r significance_bars, eval=FALSE}
+plot_target_data +
+  geom_signif(
+    comparisons = list(c(
+      params$conditions[1], 
+      params$conditions[2])), 
+    annotation = params$pvals[1], 
+    y_position = 0.93*params$range - 1*(params$range*0.075), 
+    tip_length = 0, vjust= -0.2, size = 0.7,
+    textsize = textsize_values[1]) +
+              
+  geom_signif(
+    comparisons = list(c(
+      params$conditions[1], 
+      params$conditions[3])), 
+    annotation = params$pvals[2], 
+    y_position = 0.93*params$range - 0*(params$range*0.075), 
+    tip_length = 0, vjust= -0.2, size = 0.7, 
+    textsize = textsize_values[2])
+```
+
+## Figure Save
+
+```{r figure_save, eval=FALSE}
+print("SAVE THE FIGUREEEEE")
+```
+
+Figure was saved to **HELL**
