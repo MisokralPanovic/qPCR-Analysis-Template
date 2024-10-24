@@ -1,16 +1,22 @@
 ---
 title: "Statistics Pipeline"
-output:
-  html_notebook:
-    toc: yes
-    toc_float:
-      smooth_scroll: yes
-      collapsed: no
-  html_document:
-    toc: yes
-    df_print: paged
+## for html
+#output:
+#  html_notebook:
+#    toc: yes
+#    toc_float:
+#      smooth_scroll: yes
+#      collapsed: no
+#  html_document:
+#    toc: yes
+#    df_print: paged
+## for github markdown
+output: rmarkdown::github_document
 date: "Last edited: `r format(Sys.time(), '%Y-%m-%d')`"
 ---
+```{r tidyverse_load, include=F}
+library(tidyverse)
+```
 
 ```{r dataframe, include=F}
 Target <- rep("hIFIT1", times = 12)
@@ -20,10 +26,6 @@ Value_norm <- c(
 )
 a549_multiple <- data.frame(Target, Condition, Value_norm)
 a549_single <- a549_multiple %>% filter(Condition %in% c("Mock", "cbRSV dNS1 0.001-24"))
-```
-
-```{r tidyverse_load, include=F}
-library(tidyverse)
 ```
 
 # Testing Statistical Assumptions
@@ -104,8 +106,7 @@ leveneTest(Value_norm~Condition, a549_multiple)
 ### Multiple Comparisons
 
 ```{r anova}
-library(DTK, quietly = T)
-anova(lm(Value_norm~Condition, a549_multiple))
+aov(lm(Value_norm~Condition, a549_multiple))
 ```
 
 Anova finds there is any significant difference across the whole dataset. If the p-value (Pr(>F) is **ABOVE** 0.05 the analysis should be stopped here!
