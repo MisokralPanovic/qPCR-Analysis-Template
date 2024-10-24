@@ -135,8 +135,8 @@ Some text about what the fuck are we doing
 
 Put amplification efficiency equation
 
-```math
-\mbox{Amplification Efficiency} = 10^{-1/\mbox{slope}}-1
+```{math}
+\text{Amplification Efficiency} = 10^{-1/\text{slope}}-1
 ```
 
 ```{r standard_curve_amplification_efficiency}
@@ -180,7 +180,7 @@ y_axis_title_standardCurve <- 'Cycle Threshold'
 x_axis_title_standardCurve <- 'Copy Number'
 ```
 
-```{r initial_ggplot}
+```{r standard_curve_figure_initial_ggplot}
 plot_standard_curve <- ggplot(
   data = data_combined_standard_curve,
   mapping = aes(x = Copy_number,
@@ -194,7 +194,7 @@ plot_standard_curve <- ggplot(
   )
 ```
 
-```{r y_axis}
+```{r standard_curve_figure_y_axis}
 plot_standard_curve <- plot_standard_curve +
   scale_y_continuous(
     breaks = seq(from = 0, 
@@ -204,7 +204,7 @@ plot_standard_curve <- plot_standard_curve +
   )
 ```
 
-```{r log_scale}
+```{r standard_curve_figure_log_scale}
 plot_standard_curve <- plot_standard_curve +
   scale_x_log10(
     labels = trans_format("log10", 
@@ -215,7 +215,7 @@ plot_standard_curve <- plot_standard_curve +
   annotation_logticks(sides='b')
 ```
 
-```{r theme}
+```{r standard_curve_figure_theme}
 plot_standard_curve <- plot_standard_curve +
   theme_bw() +
   theme(
@@ -247,7 +247,7 @@ plot_standard_curve <- plot_standard_curve +
 )
 ```
 
-```{r annotation}
+```{r standard_curve_figure_annotation}
 plot_standard_curve <- plot_standard_curve +
   annotate('text',
            y = y_annotation_position_standardCurve, 
@@ -263,6 +263,22 @@ plot_standard_curve
 
 ### Saving Figure
 
+```{r standard_curve_figure_save}
+ggsave(filename = paste(
+  paste("plot_standard_curve", 
+                    params$target_gene, 
+                    params$primer_set,
+                    sep = "_"), '.png', sep = ''), 
+       plot = plot_standard_curve, 
+       device = 'png', 
+       path = 'Figures', 
+       dpi = 600, 
+       height = 16, 
+       width = 20, 
+       units = 'cm')
+```
+
+
 # 2. Housekeeping Gene Control
 
 ## Introduction
@@ -271,16 +287,22 @@ Some text about what the fuck
 
 ## Data Loading
 
-```{r data_loading_housekeeping, eval=FALSE}
+Load `ct_data.csv` from `/Data` folder, and filter the target gene and primer set used based on the declared parameters in YAML.
+
+
+```{r data_loading_housekeeping}
 housekeeping_gene_data <- fread('../Data/ct_data.csv') %>% 
   filter(Target == params$housekeeping_gene, Condition %in% params$conditions)
+```
+
+```{r data_loading_housekeeping_display, echo=FALSE, warning=FALSE}
+housekeeping_gene_data |> kable()
 ```
 
 ## Processing Data
 
 
 ## Make Factors
-
 
 
 # 3. Factorised Copy Number Extrapolation
@@ -291,9 +313,15 @@ Some text about what the fuck
 
 ## Data loading and filtering
 
-```{r data_loading_filtering, eval=FALSE}
+Load `ct_data.csv` from `/Data` folder, and filter the target gene and primer set used based on the declared parameters in YAML.
+
+```{r data_loading}
 target_data <- fread('../Data/copy_number_extrapolation_data.csv') %>%
   filter(Target == params$target_gene, Condition %in% params$conditions)
+```
+
+```{r data_loading_display, echo=FALSE, warning=FALSE}
+target_data |> kable()
 ```
 
 ## Copy number extrapolation
