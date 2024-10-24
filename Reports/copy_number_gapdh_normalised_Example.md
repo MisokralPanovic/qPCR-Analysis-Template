@@ -124,7 +124,7 @@ Some text about what the fuck are we doing
 Put amplification efficiency equation
 
 ``` math
-\mbox{Amplification Efficiency} = 10^{-1/\mbox{slope}}-1
+\text{Amplification Efficiency} = 10^{-1/\text{slope}}-1
 ```
 
 ``` r
@@ -239,6 +239,23 @@ plot_standard_curve <- plot_standard_curve +
 
 ### Saving Figure
 
+``` r
+ggsave(filename = paste(
+  paste("plot_standard_curve", 
+                    params$target_gene, 
+                    params$primer_set,
+                    sep = "_"), '.png', sep = ''), 
+       plot = plot_standard_curve, 
+       device = 'png', 
+       path = '../Figures', 
+       dpi = 600, 
+       height = 16, 
+       width = 20, 
+       units = 'cm')
+```
+
+    ## `geom_smooth()` using formula = 'y ~ x'
+
 # 2. Housekeeping Gene Control
 
 ## Introduction
@@ -247,14 +264,110 @@ Some text about what the fuck
 
 ## Data Loading
 
+Load `ct_data.csv` from `/Data` folder, and filter the target gene and
+primer set used based on the declared parameters in YAML.
+
 ``` r
 housekeeping_gene_data <- fread('../Data/ct_data.csv') %>% 
-  filter(Target == params$housekeeping_gene, Condition %in% params$conditions)
+  filter(Target == params$housekeeping_gene, 
+         Cell_line == params$cell_line,
+         Condition %in% params$conditions)
 ```
+
+|       Ct | Target | Condition     | Cell_line | Additional_info |
+|---------:|:-------|:--------------|:----------|:----------------|
+| 25.22434 | bGAPDH | bRSV dSH 1-24 | MDBK      | NA              |
+| 26.25955 | bGAPDH | bRSV dSH 1-24 | MDBK      | NA              |
+| 25.54487 | bGAPDH | bRSV dSH 1-24 | MDBK      | NA              |
+| 22.78984 | bGAPDH | hRSV 1-24     | MDBK      | NA              |
+| 22.28562 | bGAPDH | hRSV 1-24     | MDBK      | NA              |
+| 21.41880 | bGAPDH | hRSV 1-24     | MDBK      | NA              |
+| 22.23001 | bGAPDH | Mock          | MDBK      | NA              |
+| 22.17195 | bGAPDH | Mock          | MDBK      | NA              |
+| 22.01028 | bGAPDH | Mock          | MDBK      | NA              |
 
 ## Processing Data
 
-## Make Factors
+wriet about what the fuck is happening
+
+equation for ddCt
+
+``` math
+\text{Relative Quantification} = 2^{\Updelta\Updelta \text{Ct}}
+```
+
+``` math
+\Updelta\Updelta \text{Ct} = \Updelta \text{Ct}_{\text{Test Samples}}-\Updelta \text{Ct}_{\text{Calibrator Samples}}
+```
+
+``` math
+\Updelta \text{Ct}_{\text{Test Samples}} = \text{Ct}_{\text{Target Gene in Tests}}-\text{Ct}_{\text{Reference Gene in Tests}}
+```
+
+``` math
+\Updelta \text{Ct}_{\text{Calibrator Samples}} = \text{Ct}_{\text{Target Gene in Calibrator}}-\text{Ct}_{\text{Reference Gene in Calibrator}}
+```
+
+``` r
+housekeeping_gene_data <- housekeeping_gene_data |> mutate(
+  control_mean = mean(
+    Ct[Condition == params$conditions[1]],
+    na.rm = T),
+  log2_dCt = 2^ (- (Ct - control_mean)),
+  control_mean_log = mean(
+    log2_dCt[Condition == params$conditions[1]],
+    na.rm = T),
+  Value_norm = log2_dCt / control_mean_log
+)
+```
+
+| Ct | Target | Condition | Cell_line | Additional_info | control_mean | log2_dCt | control_mean_log | Value_norm |
+|---:|:---|:---|:---|:---|---:|---:|---:|---:|
+| 25.22434 | bGAPDH | bRSV dSH 1-24 | MDBK | NA | 22.13742 | 0.1176908 | 1.0021 | 0.1174441 |
+| 26.25955 | bGAPDH | bRSV dSH 1-24 | MDBK | NA | 22.13742 | 0.0574268 | 1.0021 | 0.0573064 |
+| 25.54487 | bGAPDH | bRSV dSH 1-24 | MDBK | NA | 22.13742 | 0.0942440 | 1.0021 | 0.0940465 |
+| 22.78984 | bGAPDH | hRSV 1-24 | MDBK | NA | 22.13742 | 0.6362078 | 1.0021 | 0.6348746 |
+| 22.28562 | bGAPDH | hRSV 1-24 | MDBK | NA | 22.13742 | 0.9023694 | 1.0021 | 0.9004784 |
+| 21.41880 | bGAPDH | hRSV 1-24 | MDBK | NA | 22.13742 | 1.6455992 | 1.0021 | 1.6421508 |
+| 22.23001 | bGAPDH | Mock | MDBK | NA | 22.13742 | 0.9378337 | 1.0021 | 0.9358684 |
+| 22.17195 | bGAPDH | Mock | MDBK | NA | 22.13742 | 0.9763464 | 1.0021 | 0.9743004 |
+| 22.01028 | bGAPDH | Mock | MDBK | NA | 22.13742 | 1.0921197 | 1.0021 | 1.0898311 |
+
+## Factorisation
+
+REMANE ME!!!
+
+``` r
+housekeeping_gene_data <- aggregate(x=housekeeping_gene_data, 
+                                    by=list(housekeeping_gene_data$Condition),
+                                    FUN = mean)
+```
+
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+
+``` r
+housekeeping_gene_data <- housekeeping_gene_data %>%
+  arrange(match(Group.1, params$conditions))
+
+housekeeping_factor_vector <- rep(housekeeping_gene_data$Value_norm, each=3)
+```
 
 # 3. Factorised Copy Number Extrapolation
 
@@ -264,14 +377,70 @@ Some text about what the fuck
 
 ## Data loading and filtering
 
+Load `ct_data.csv` from `/Data` folder, and filter the target gene and
+primer set used based on the declared parameters in YAML.
+
 ``` r
 target_data <- fread('../Data/copy_number_extrapolation_data.csv') %>%
-  filter(Target == params$target_gene, Condition %in% params$conditions)
+  filter(Target == params$target_gene,
+         Cell_line == params$cell_line,
+         Condition %in% params$conditions)
 ```
+
+| Copy_number |       Ct | Target | Condition     | Cell_line | Additional_info |
+|:------------|---------:|:-------|:--------------|:----------|:----------------|
+| NA          | 25.90040 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
+| NA          | 25.76134 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
+| NA          | 25.85236 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
+| NA          | 23.95345 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
+| NA          | 23.68442 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
+| NA          | 23.90436 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
+| NA          | 26.85368 | bIFIT1 | Mock          | MDBK      | NA              |
+| NA          | 26.95577 | bIFIT1 | Mock          | MDBK      | NA              |
+| NA          | 26.59759 | bIFIT1 | Mock          | MDBK      | NA              |
 
 ## Copy number extrapolation
 
+``` r
+target_data_modelled <- target_data |> 
+  mutate(
+    Copy_number = 10^predict(model_standard_curve, 
+                             newdata = target_data))
+```
+
+| Copy_number |       Ct | Target | Condition     | Cell_line | Additional_info |
+|------------:|---------:|:-------|:--------------|:----------|:----------------|
+|   190.47700 | 25.90040 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
+|   211.08230 | 25.76134 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
+|   197.35705 | 25.85236 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
+|   802.47089 | 23.95345 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
+|   978.89747 | 23.68442 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
+|   832.10689 | 23.90436 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
+|    94.19516 | 26.85368 | bIFIT1 | Mock          | MDBK      | NA              |
+|    87.35248 | 26.95577 | bIFIT1 | Mock          | MDBK      | NA              |
+|   113.81027 | 26.59759 | bIFIT1 | Mock          | MDBK      | NA              |
+
 ## Factorisation based on housekeeping gene levels
+
+wriet about what the fuck is happening
+
+equation for ddCt
+
+``` math
+\text{Relative Quantification} = 2^{\Updelta\Updelta \text{Ct}}
+```
+
+``` math
+\Updelta\Updelta \text{Ct} = \Updelta \text{Ct}_{\text{Test Samples}}-\Updelta \text{Ct}_{\text{Calibrator Samples}}
+```
+
+``` math
+\Updelta \text{Ct}_{\text{Test Samples}} = \text{Ct}_{\text{Target Gene in Tests}}-\text{Ct}_{\text{Reference Gene in Tests}}
+```
+
+``` math
+\Updelta \text{Ct}_{\text{Calibrator Samples}} = \text{Ct}_{\text{Target Gene in Calibrator}}-\text{Ct}_{\text{Reference Gene in Calibrator}}
+```
 
 ## Statistics
 

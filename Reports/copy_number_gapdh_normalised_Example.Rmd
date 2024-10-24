@@ -7,8 +7,9 @@ output: rmarkdown::github_document
 params:
     target_gene: bIFIT1
     primer_set: PS11
+    cell_line: MDBK
     housekeeping_gene: bGAPDH
-    conditions: !r c('Mock', 'phRSV 1-24','bIFNa 5-6')
+    conditions: !r c('Mock', 'hRSV 1-24', 'bRSV dSH 1-24')
     colors: !r c('#999999', '#ffc034', '#9a6a00')
     statistics: "Normal distribution and equal variance"
     pvals: !r c(0.9935156, 0.1817141)
@@ -271,7 +272,7 @@ ggsave(filename = paste(
                     sep = "_"), '.png', sep = ''), 
        plot = plot_standard_curve, 
        device = 'png', 
-       path = 'Figures', 
+       path = '../Figures', 
        dpi = 600, 
        height = 16, 
        width = 20, 
@@ -292,7 +293,9 @@ Load `ct_data.csv` from `/Data` folder, and filter the target gene and primer se
 
 ```{r data_loading_housekeeping}
 housekeeping_gene_data <- fread('../Data/ct_data.csv') %>% 
-  filter(Target == params$housekeeping_gene, Condition %in% params$conditions)
+  filter(Target == params$housekeeping_gene, 
+         Cell_line == params$cell_line,
+         Condition %in% params$conditions)
 ```
 
 ```{r data_loading_housekeeping_display, echo=FALSE, warning=FALSE}
@@ -301,8 +304,54 @@ housekeeping_gene_data |> kable()
 
 ## Processing Data
 
+wriet about what the fuck is happening
 
-## Make Factors
+equation for ddCt 
+
+```{math}
+\text{Relative Quantification} = 2^{\Updelta\Updelta \text{Ct}}
+```
+```{math}
+\Updelta\Updelta \text{Ct} = \Updelta \text{Ct}_{\text{Test Samples}}-\Updelta \text{Ct}_{\text{Calibrator Samples}}
+```
+```{math}
+\Updelta \text{Ct}_{\text{Test Samples}} = \text{Ct}_{\text{Target Gene in Tests}}-\text{Ct}_{\text{Reference Gene in Tests}}
+```
+```{math}
+\Updelta \text{Ct}_{\text{Calibrator Samples}} = \text{Ct}_{\text{Target Gene in Calibrator}}-\text{Ct}_{\text{Reference Gene in Calibrator}}
+```
+
+
+```{r housekeeping_gene_factors}
+housekeeping_gene_data <- housekeeping_gene_data |> mutate(
+  control_mean = mean(
+    Ct[Condition == params$conditions[1]],
+    na.rm = T),
+  log2_dCt = 2^ (- (Ct - control_mean)),
+  control_mean_log = mean(
+    log2_dCt[Condition == params$conditions[1]],
+    na.rm = T),
+  Value_norm = log2_dCt / control_mean_log
+)
+```
+
+```{r housekeeping_gene_factors_display, echo=FALSE, warning=FALSE}
+housekeeping_gene_data |> kable()
+```
+
+## Factorisation
+
+REMANE ME!!!
+
+```{r factroisation}
+housekeeping_gene_data <- aggregate(x=housekeeping_gene_data, 
+                                    by=list(housekeeping_gene_data$Condition),
+                                    FUN = mean)
+housekeeping_gene_data <- housekeeping_gene_data %>%
+  arrange(match(Group.1, params$conditions))
+
+housekeeping_factor_vector <- rep(housekeeping_gene_data$Value_norm, each=3)
+```
 
 
 # 3. Factorised Copy Number Extrapolation
@@ -317,7 +366,9 @@ Load `ct_data.csv` from `/Data` folder, and filter the target gene and primer se
 
 ```{r data_loading}
 target_data <- fread('../Data/copy_number_extrapolation_data.csv') %>%
-  filter(Target == params$target_gene, Condition %in% params$conditions)
+  filter(Target == params$target_gene,
+         Cell_line == params$cell_line,
+         Condition %in% params$conditions)
 ```
 
 ```{r data_loading_display, echo=FALSE, warning=FALSE}
@@ -326,8 +377,36 @@ target_data |> kable()
 
 ## Copy number extrapolation
 
+```{r copy_number_extrapolation}
+target_data_modelled <- target_data |> 
+  mutate(
+    Copy_number = 10^predict(model_standard_curve, 
+                             newdata = target_data))
+```
+
+```{r copy_number_extrapolation_display, echo=FALSE, warning=FALSE}
+target_data_modelled |> kable()
+```
+
 
 ## Factorisation based on housekeeping gene levels
+
+wriet about what the fuck is happening
+
+equation for ddCt 
+
+```{math}
+\text{Relative Quantification} = 2^{\Updelta\Updelta \text{Ct}}
+```
+```{math}
+\Updelta\Updelta \text{Ct} = \Updelta \text{Ct}_{\text{Test Samples}}-\Updelta \text{Ct}_{\text{Calibrator Samples}}
+```
+```{math}
+\Updelta \text{Ct}_{\text{Test Samples}} = \text{Ct}_{\text{Target Gene in Tests}}-\text{Ct}_{\text{Reference Gene in Tests}}
+```
+```{math}
+\Updelta \text{Ct}_{\text{Calibrator Samples}} = \text{Ct}_{\text{Target Gene in Calibrator}}-\text{Ct}_{\text{Reference Gene in Calibrator}}
+```
 
 
 ## Statistics
