@@ -13,42 +13,55 @@ title: "Statistics Pipeline"
 ## for github markdown
 output: rmarkdown::github_document
 date: "Last edited: `r format(Sys.time(), '%Y-%m-%d')`"
+
 ---
 ```{r tidyverse_load, include=F}
 library(tidyverse)
+library(kableExtra)
+library(rmarkdown)
 ```
 
 ```{r dataframe, include=F}
-Target <- rep("hIFIT1", times = 12)
-Condition <- factor(rep(c("Mock", "cbRSV dNS1 0.001-24","cbRSV dNS2 0.01-24", "cbRSV dNS1/2 0.001-24"), each = 3), levels = c("Mock", "cbRSV dNS1 0.001-24","cbRSV dNS2 0.01-24", "cbRSV dNS1/2 0.001-24"))
-Value_norm <- c(
-  0.470688086, 1.584484165, 0.944827749, 81.20096936, 24.32041674, 75.01759177, 24.90206996, 9.923147271,19.3690698, 278.2460496, 292.1552481, 24.35566374
+Target <- rep("Target gene", times = 12)
+Condition <- factor(rep(c("Control", "Condition 1","Condition 2", "Condition 3"), each = 3), levels = c("Control", "Condition 1","Condition 2", "Condition 3"))
+Value_normalised <- c(
+  1.070688086, 1.084484165, 0.944827749, 81.20096936, 64.32041674, 75.01759177, 24.90206996, 19.923147271,19.3690698, 278.2460496, 292.1552481, 240.35566374
 )
-a549_multiple <- data.frame(Target, Condition, Value_norm)
-a549_single <- a549_multiple %>% filter(Condition %in% c("Mock", "cbRSV dNS1 0.001-24"))
+dataset_multiple <- data.frame(Target, Condition, Value_normalised)
+dataset_single <- dataset_multiple %>% filter(Condition %in% c("Control", "Condition 1"))
+```
+
+# Introduction
+This workbook acts as a template for statistical analysis. it provides guidelines for assumptions and test to use for multiple experimental conditions and single experimental condition.
+
+Below is the sample data for multiple experimental conditions:
+```{r dataset_multiple}
+dataset_multiple |> kable()
+```
+
+
+Below is the sample data for one experimental condition:
+```{r dataset_single}
+dataset_single |> kable()
 ```
 
 # Testing Statistical Assumptions
-
-```{r Dataset}
-# Replace 'a549_multiple' and 'a549_single' in the workbook
-```
 
 ## Visual Tests
 
 #### Normal Distribution by Boxplot
 
 ```{r boxplot}
-boxplot(Value_norm~Condition, a549_multiple)
+boxplot(Value_normalised~Condition, dataset_multiple)
 ```
 
 #### Testing equality of variance assumptions
 
 ```{r testing_assumptions}
-plot(lm(Value_norm~Condition, a549_multiple))
+plot(lm(Value_normalised~Condition, dataset_multiple))
 ```
 
-**1st and the last plots:** we want symetrical data about the 0 horizontal line
+**1st and the last plots:** we want symmetrical data about the 0 horizontal line
 
 **2nd plot:** we want residual points to be as close to the predicted line as possible
 
@@ -63,10 +76,10 @@ plot(lm(Value_norm~Condition, a549_multiple))
 **p value \> 0.05 means normal distribution**
 
 ```{r shapiro.test_single}
-shapiro.test(a549_multiple$Value_norm[1:3])
-shapiro.test(a549_multiple$Value_norm[4:6])
-shapiro.test(a549_multiple$Value_norm[7:9])
-shapiro.test(a549_multiple$Value_norm[10:12])
+shapiro.test(dataset_multiple$Value_normalised[1:3]) # test all values in one condition
+shapiro.test(dataset_multiple$Value_normalised[4:6]) # test all values in one condition
+shapiro.test(dataset_multiple$Value_normalised[7:9]) # test all values in one condition
+shapiro.test(dataset_multiple$Value_normalised[10:12]) # test all values in one condition
 ```
 
 #### Test Normality (of distribution) for the whole dataset
@@ -74,8 +87,8 @@ shapiro.test(a549_multiple$Value_norm[10:12])
 Visual assessment where you want the residual points to be as close line as possible.
 
 ```{r shapiro.test_total}
-plot(residuals(lm(Value_norm~Condition, a549_multiple)))
-shapiro.test(residuals(lm(Value_norm~Condition, a549_multiple)))
+plot(residuals(lm(Value_normalised~Condition, dataset_multiple))) # test all values in the whole dataset
+shapiro.test(residuals(lm(Value_normalised~Condition, dataset_multiple))) # test all values in the whole dataset
 ```
 
 If all groups and combined analysis evaluate to normal distribution then its normal. If one group is non normal by itself but combined dataset evaluates to normal distribution usually you can assume its normal distribution.
@@ -87,7 +100,7 @@ If all groups and combined analysis evaluate to normal distribution then its nor
 **p value \> 0.05 means equal variance**
 
 ```{r bartlett.test}
-bartlett.test(Value_norm~Condition, a549_multiple)
+bartlett.test(Value_normalised~Condition, dataset_multiple)
 ```
 
 #### For **NON NORMAL** Distribution
@@ -95,8 +108,8 @@ bartlett.test(Value_norm~Condition, a549_multiple)
 **p value \> 0.05 means equal variance**
 
 ```{r leveneTest}
-library(car, quietly = T)
-leveneTest(Value_norm~Condition, a549_multiple)
+library(car, quietly = TRUE)
+leveneTest(Value_normalised~Condition, dataset_multiple)
 ```
 
 # Obtaining Statistical Parameters
@@ -106,7 +119,7 @@ leveneTest(Value_norm~Condition, a549_multiple)
 ### Multiple Comparisons
 
 ```{r anova}
-aov(lm(Value_norm~Condition, a549_multiple))
+aov(lm(Value_normalised~Condition, dataset_multiple))
 ```
 
 Anova finds there is any significant difference across the whole dataset. If the p-value (Pr(>F) is **ABOVE** 0.05 the analysis should be stopped here!
@@ -114,7 +127,7 @@ Anova finds there is any significant difference across the whole dataset. If the
 Important parameters: F value and Pr(>F) (include in reports)
 
 ```{r tukey}
-TukeyHSD(aov(Value_norm~Condition, a549_multiple))
+TukeyHSD(aov(Value_normalised~Condition, dataset_multiple))
 ```
 
 P adj are the individual p values between group combinations.
@@ -122,8 +135,8 @@ P adj are the individual p values between group combinations.
 ### Single Comparison
 
 ```{r paired_t_test}
-t.test(Value_norm~Condition, 
-       data=a549_single, 
+t.test(Value_normalised~Condition, 
+       data=dataset_single, 
        alternative='two.sided',
        var.equal=T)
 ```
@@ -136,8 +149,8 @@ Important parameters: t and p-value (include in reports)
 
 ```{r kruskal.test}
 library(dunn.test, quietly = T)
-dunn.test(a549_multiple$Value_norm, 
-          a549_multiple$Condition, 
+dunn.test(dataset_multiple$Value_normalised, 
+          dataset_multiple$Condition, 
           altp=T,
           list=T)
 ```
@@ -151,8 +164,8 @@ The dunn test displays both comparison matrix and comparison list of tested grou
 ### Simple Comparison
 
 ```{r paired_t_test_2}
-t.test(Value_norm~Condition, 
-       data= a549_single, 
+t.test(Value_normalised~Condition, 
+       data= dataset_single, 
        alternative='two.sided',
        var.equal=T)
 ```
@@ -164,8 +177,8 @@ Important parameters: t and p-value (include in reports)
 ### Multiple Comparisons
 
 ```{r one_way_test}
-oneway.test(Value_norm~Condition, 
-            a549_multiple, 
+oneway.test(Value_normalised~Condition, 
+            dataset_multiple, 
             var.equal = F)
 ```
 
@@ -176,7 +189,7 @@ Important parameters: F value and Pr(>F) (include in reports)
 ```{r games_howell}
 library(rstatix, quietly = T)
 library(dplyr, quietly = T)
-a549_multiple %>% games_howell_test(Value_norm~Condition)
+dataset_multiple %>% games_howell_test(Value_normalised~Condition)
 ```
 
 P adj are the individual p values between group combinations.
@@ -184,8 +197,8 @@ P adj are the individual p values between group combinations.
 ### Single Comparison
 
 ```{r Welch_Two_Sample_t-test}
-t.test(Value_norm~Condition, 
-       data=a549_single, 
+t.test(Value_normalised~Condition, 
+       data=dataset_single, 
        alternative='two.sided',
        var.equal=F)
 ```

@@ -1,19 +1,57 @@
 Statistics Pipeline
 ================
-Last edited: 2024-10-23
+Last edited: 2024-10-24
 
-# Testing Statistical Assumptions
+# Introduction
+
+This workbook acts as a template for statistical analysis. it provides
+guidelines for assumptions and test to use for multiple experimental
+conditions and single experimental condition.
+
+Below is the sample data for multiple experimental conditions:
 
 ``` r
-# Replace 'a549_multiple' and 'a549_single' in the workbook
+dataset_multiple |> kable()
 ```
+
+| Target      | Condition   | Value_normalised |
+|:------------|:------------|-----------------:|
+| Target gene | Control     |        1.0706881 |
+| Target gene | Control     |        1.0844842 |
+| Target gene | Control     |        0.9448277 |
+| Target gene | Condition 1 |       81.2009694 |
+| Target gene | Condition 1 |       64.3204167 |
+| Target gene | Condition 1 |       75.0175918 |
+| Target gene | Condition 2 |       24.9020700 |
+| Target gene | Condition 2 |       19.9231473 |
+| Target gene | Condition 2 |       19.3690698 |
+| Target gene | Condition 3 |      278.2460496 |
+| Target gene | Condition 3 |      292.1552481 |
+| Target gene | Condition 3 |      240.3556637 |
+
+Below is the sample data for one experimental condition:
+
+``` r
+dataset_single |> kable()
+```
+
+| Target      | Condition   | Value_normalised |
+|:------------|:------------|-----------------:|
+| Target gene | Control     |        1.0706881 |
+| Target gene | Control     |        1.0844842 |
+| Target gene | Control     |        0.9448277 |
+| Target gene | Condition 1 |       81.2009694 |
+| Target gene | Condition 1 |       64.3204167 |
+| Target gene | Condition 1 |       75.0175918 |
+
+# Testing Statistical Assumptions
 
 ## Visual Tests
 
 #### Normal Distribution by Boxplot
 
 ``` r
-boxplot(Value_norm~Condition, a549_multiple)
+boxplot(Value_normalised~Condition, dataset_multiple)
 ```
 
 ![](Statistics-pipeline_files/figure-gfm/boxplot-1.png)<!-- -->
@@ -21,12 +59,12 @@ boxplot(Value_norm~Condition, a549_multiple)
 #### Testing equality of variance assumptions
 
 ``` r
-plot(lm(Value_norm~Condition, a549_multiple))
+plot(lm(Value_normalised~Condition, dataset_multiple))
 ```
 
 ![](Statistics-pipeline_files/figure-gfm/testing_assumptions-1.png)<!-- -->![](Statistics-pipeline_files/figure-gfm/testing_assumptions-2.png)<!-- -->![](Statistics-pipeline_files/figure-gfm/testing_assumptions-3.png)<!-- -->![](Statistics-pipeline_files/figure-gfm/testing_assumptions-4.png)<!-- -->
 
-**1st and the last plots:** we want symetrical data about the 0
+**1st and the last plots:** we want symmetrical data about the 0
 horizontal line
 
 **2nd plot:** we want residual points to be as close to the predicted
@@ -43,44 +81,44 @@ line as possible
 **p value \> 0.05 means normal distribution**
 
 ``` r
-shapiro.test(a549_multiple$Value_norm[1:3])
+shapiro.test(dataset_multiple$Value_normalised[1:3]) # test all values in one condition
 ```
 
     ## 
     ##  Shapiro-Wilk normality test
     ## 
-    ## data:  a549_multiple$Value_norm[1:3]
-    ## W = 0.99269, p-value = 0.8365
+    ## data:  dataset_multiple$Value_normalised[1:3]
+    ## W = 0.8233, p-value = 0.1714
 
 ``` r
-shapiro.test(a549_multiple$Value_norm[4:6])
+shapiro.test(dataset_multiple$Value_normalised[4:6]) # test all values in one condition
 ```
 
     ## 
     ##  Shapiro-Wilk normality test
     ## 
-    ## data:  a549_multiple$Value_norm[4:6]
-    ## W = 0.83046, p-value = 0.1895
+    ## data:  dataset_multiple$Value_normalised[4:6]
+    ## W = 0.97672, p-value = 0.7075
 
 ``` r
-shapiro.test(a549_multiple$Value_norm[7:9])
+shapiro.test(dataset_multiple$Value_normalised[7:9]) # test all values in one condition
 ```
 
     ## 
     ##  Shapiro-Wilk normality test
     ## 
-    ## data:  a549_multiple$Value_norm[7:9]
-    ## W = 0.97776, p-value = 0.7141
+    ## data:  dataset_multiple$Value_normalised[7:9]
+    ## W = 0.82428, p-value = 0.1739
 
 ``` r
-shapiro.test(a549_multiple$Value_norm[10:12])
+shapiro.test(dataset_multiple$Value_normalised[10:12]) # test all values in one condition
 ```
 
     ## 
     ##  Shapiro-Wilk normality test
     ## 
-    ## data:  a549_multiple$Value_norm[10:12]
-    ## W = 0.78884, p-value = 0.08813
+    ## data:  dataset_multiple$Value_normalised[10:12]
+    ## W = 0.93332, p-value = 0.5012
 
 #### Test Normality (of distribution) for the whole dataset
 
@@ -88,20 +126,20 @@ Visual assessment where you want the residual points to be as close line
 as possible.
 
 ``` r
-plot(residuals(lm(Value_norm~Condition, a549_multiple)))
+plot(residuals(lm(Value_normalised~Condition, dataset_multiple))) # test all values in the whole dataset
 ```
 
 ![](Statistics-pipeline_files/figure-gfm/shapiro.test_total-1.png)<!-- -->
 
 ``` r
-shapiro.test(residuals(lm(Value_norm~Condition, a549_multiple)))
+shapiro.test(residuals(lm(Value_normalised~Condition, dataset_multiple))) # test all values in the whole dataset
 ```
 
     ## 
     ##  Shapiro-Wilk normality test
     ## 
-    ## data:  residuals(lm(Value_norm ~ Condition, a549_multiple))
-    ## W = 0.80078, p-value = 0.009563
+    ## data:  residuals(lm(Value_normalised ~ Condition, dataset_multiple))
+    ## W = 0.86807, p-value = 0.06177
 
 If all groups and combined analysis evaluate to normal distribution then
 its normal. If one group is non normal by itself but combined dataset
@@ -115,21 +153,21 @@ distribution.
 **p value \> 0.05 means equal variance**
 
 ``` r
-bartlett.test(Value_norm~Condition, a549_multiple)
+bartlett.test(Value_normalised~Condition, dataset_multiple)
 ```
 
     ## 
     ##  Bartlett test of homogeneity of variances
     ## 
-    ## data:  Value_norm by Condition
-    ## Bartlett's K-squared = 24.76, df = 3, p-value = 1.733e-05
+    ## data:  Value_normalised by Condition
+    ## Bartlett's K-squared = 21.9, df = 3, p-value = 6.842e-05
 
 #### For **NON NORMAL** Distribution
 
 **p value \> 0.05 means equal variance**
 
 ``` r
-library(car, quietly = T)
+library(car, quietly = TRUE)
 ```
 
     ## 
@@ -144,12 +182,12 @@ library(car, quietly = T)
     ##     some
 
 ``` r
-leveneTest(Value_norm~Condition, a549_multiple)
+leveneTest(Value_normalised~Condition, dataset_multiple)
 ```
 
     ## Levene's Test for Homogeneity of Variance (center = median)
     ##       Df F value Pr(>F)
-    ## group  3  0.9692 0.4534
+    ## group  3    1.78 0.2286
     ##        8
 
 # Obtaining Statistical Parameters
@@ -159,18 +197,18 @@ leveneTest(Value_norm~Condition, a549_multiple)
 ### Multiple Comparisons
 
 ``` r
-aov(lm(Value_norm~Condition, a549_multiple))
+aov(lm(Value_normalised~Condition, dataset_multiple))
 ```
 
     ## Call:
-    ##    aov(formula = lm(Value_norm ~ Condition, a549_multiple))
+    ##    aov(formula = lm(Value_normalised ~ Condition, dataset_multiple))
     ## 
     ## Terms:
     ##                 Condition Residuals
-    ## Sum of Squares   72005.40  47520.11
+    ## Sum of Squares   136123.2    1601.9
     ## Deg. of Freedom         3         8
     ## 
-    ## Residual standard error: 77.07148
+    ## Residual standard error: 14.15054
     ## Estimated effects may be unbalanced
 
 Anova finds there is any significant difference across the whole
@@ -180,37 +218,30 @@ be stopped here!
 Important parameters: F value and Pr(\>F) (include in reports)
 
 ``` r
-TukeyHSD(aov(Value_norm~Condition, a549_multiple))
+TukeyHSD(aov(Value_normalised~Condition, dataset_multiple))
 ```
 
     ##   Tukey multiple comparisons of means
     ##     95% family-wise confidence level
     ## 
-    ## Fit: aov(formula = Value_norm ~ Condition, data = a549_multiple)
+    ## Fit: aov(formula = Value_normalised ~ Condition, data = dataset_multiple)
     ## 
     ## $Condition
-    ##                                                diff         lwr      upr
-    ## cbRSV dNS1 0.001-24-Mock                   59.17966 -142.339880 260.6992
-    ## cbRSV dNS2 0.01-24-Mock                    17.06476 -184.454777 218.5843
-    ## cbRSV dNS1/2 0.001-24-Mock                197.25232   -4.267219 398.7719
-    ## cbRSV dNS2 0.01-24-cbRSV dNS1 0.001-24    -42.11490 -243.634436 159.4046
-    ## cbRSV dNS1/2 0.001-24-cbRSV dNS1 0.001-24 138.07266  -63.446878 339.5922
-    ## cbRSV dNS1/2 0.001-24-cbRSV dNS2 0.01-24  180.18756  -21.331981 381.7071
-    ##                                               p adj
-    ## cbRSV dNS1 0.001-24-Mock                  0.7849860
-    ## cbRSV dNS2 0.01-24-Mock                   0.9924778
-    ## cbRSV dNS1/2 0.001-24-Mock                0.0550105
-    ## cbRSV dNS2 0.01-24-cbRSV dNS1 0.001-24    0.9057790
-    ## cbRSV dNS1/2 0.001-24-cbRSV dNS1 0.001-24 0.2043904
-    ## cbRSV dNS1/2 0.001-24-cbRSV dNS2 0.01-24  0.0806780
+    ##                              diff       lwr       upr     p adj
+    ## Condition 1-Control      72.47966  35.48011 109.47921 0.0010826
+    ## Condition 2-Control      20.36476 -16.63479  57.36431 0.3554778
+    ## Condition 3-Control     269.21899 232.21943 306.21854 0.0000000
+    ## Condition 2-Condition 1 -52.11490 -89.11445 -15.11534 0.0085256
+    ## Condition 3-Condition 1 196.73933 159.73978 233.73888 0.0000007
+    ## Condition 3-Condition 2 248.85422 211.85467 285.85378 0.0000001
 
 P adj are the individual p values between group combinations.
 
 ### Single Comparison
 
 ``` r
-t.test(Value_norm~Condition, 
-       data=a549_single, 
+t.test(Value_normalised~Condition, 
+       data=dataset_single, 
        alternative='two.sided',
        var.equal=T)
 ```
@@ -218,14 +249,14 @@ t.test(Value_norm~Condition,
     ## 
     ##  Two Sample t-test
     ## 
-    ## data:  Value_norm by Condition
-    ## t = -3.2839, df = 4, p-value = 0.03039
-    ## alternative hypothesis: true difference in means between group Mock and group cbRSV dNS1 0.001-24 is not equal to 0
+    ## data:  Value_normalised by Condition
+    ## t = -14.699, df = 4, p-value = 0.0001247
+    ## alternative hypothesis: true difference in means between group Control and group Condition 1 is not equal to 0
     ## 95 percent confidence interval:
-    ##  -109.214377   -9.144942
+    ##  -86.17010 -58.78922
     ## sample estimates:
-    ##                mean in group Mock mean in group cbRSV dNS1 0.001-24 
-    ##                           1.00000                          60.17966
+    ##     mean in group Control mean in group Condition 1 
+    ##                  1.033333                 73.512993
 
 Important parameters: t and p-value (include in reports)
 
@@ -235,8 +266,8 @@ Important parameters: t and p-value (include in reports)
 
 ``` r
 library(dunn.test, quietly = T)
-dunn.test(a549_multiple$Value_norm, 
-          a549_multiple$Condition, 
+dunn.test(dataset_multiple$Value_normalised, 
+          dataset_multiple$Condition, 
           altp=T,
           list=T)
 ```
@@ -244,32 +275,32 @@ dunn.test(a549_multiple$Value_norm,
     ##   Kruskal-Wallis rank sum test
     ## 
     ## data: x and group
-    ## Kruskal-Wallis chi-squared = 8.4359, df = 3, p-value = 0.04
+    ## Kruskal-Wallis chi-squared = 10.3846, df = 3, p-value = 0.02
     ## 
     ## 
     ##                            Comparison of x by group                            
     ##                                 (No adjustment)                                
     ## Col Mean-|
-    ## Row Mean |   cbRSV dN   cbRSV dN   cbRSV dN
+    ## Row Mean |   Conditio   Conditio   Conditio
     ## ---------+---------------------------------
-    ## cbRSV dN |  -0.566138
-    ##          |     0.5713
+    ## Conditio |   1.019049
+    ##          |     0.3082
     ##          |
-    ## cbRSV dN |   0.905821   1.471960
-    ##          |     0.3650     0.1410
+    ## Conditio |  -1.019049  -2.038098
+    ##          |     0.3082    0.0415*
     ##          |
-    ##     Mock |   2.151326   2.717464   1.245504
-    ##          |    0.0315*    0.0066*     0.2129
+    ##  Control |   2.038098   1.019049   3.057147
+    ##          |    0.0415*     0.3082    0.0022*
     ## 
     ## 
     ## List of pairwise comparisons: Z statistic (p-value)
-    ## -----------------------------------------------------------------
-    ## cbRSV dNS1 0.001-24 - cbRSV dNS1/2 0.001-24 : -0.566138 (0.5713)
-    ## cbRSV dNS1 0.001-24 - cbRSV dNS2 0.01-24    :  0.905821 (0.3650)
-    ## cbRSV dNS1/2 0.001-24 - cbRSV dNS2 0.01-24  :  1.471960 (0.1410)
-    ## cbRSV dNS1 0.001-24 - Mock                  :  2.151326 (0.0315)*
-    ## cbRSV dNS1/2 0.001-24 - Mock                :  2.717464 (0.0066)*
-    ## cbRSV dNS2 0.01-24 - Mock                   :  1.245504 (0.2129)
+    ## -----------------------------------------------
+    ## Condition 1 - Condition 2 :  1.019049 (0.3082)
+    ## Condition 1 - Condition 3 : -1.019049 (0.3082)
+    ## Condition 2 - Condition 3 : -2.038098 (0.0415)*
+    ## Condition 1 - Control     :  2.038098 (0.0415)*
+    ## Condition 2 - Control     :  1.019049 (0.3082)
+    ## Condition 3 - Control     :  3.057147 (0.0022)*
     ## 
     ## alpha = 0.05
     ## Reject Ho if p <= alpha
@@ -287,8 +318,8 @@ combinations.
 ### Simple Comparison
 
 ``` r
-t.test(Value_norm~Condition, 
-       data= a549_single, 
+t.test(Value_normalised~Condition, 
+       data= dataset_single, 
        alternative='two.sided',
        var.equal=T)
 ```
@@ -296,14 +327,14 @@ t.test(Value_norm~Condition,
     ## 
     ##  Two Sample t-test
     ## 
-    ## data:  Value_norm by Condition
-    ## t = -3.2839, df = 4, p-value = 0.03039
-    ## alternative hypothesis: true difference in means between group Mock and group cbRSV dNS1 0.001-24 is not equal to 0
+    ## data:  Value_normalised by Condition
+    ## t = -14.699, df = 4, p-value = 0.0001247
+    ## alternative hypothesis: true difference in means between group Control and group Condition 1 is not equal to 0
     ## 95 percent confidence interval:
-    ##  -109.214377   -9.144942
+    ##  -86.17010 -58.78922
     ## sample estimates:
-    ##                mean in group Mock mean in group cbRSV dNS1 0.001-24 
-    ##                           1.00000                          60.17966
+    ##     mean in group Control mean in group Condition 1 
+    ##                  1.033333                 73.512993
 
 Important parameters: t and p-value (include in reports)
 
@@ -312,16 +343,16 @@ Important parameters: t and p-value (include in reports)
 ### Multiple Comparisons
 
 ``` r
-oneway.test(Value_norm~Condition, 
-            a549_multiple, 
+oneway.test(Value_normalised~Condition, 
+            dataset_multiple, 
             var.equal = F)
 ```
 
     ## 
     ##  One-way analysis of means (not assuming equal variances)
     ## 
-    ## data:  Value_norm and Condition
-    ## F = 7.3952, num df = 3.0000, denom df = 3.3461, p-value = 0.05631
+    ## data:  Value_normalised and Condition
+    ## F = 155.35, num df = 3.0000, denom df = 3.3349, p-value = 0.000459
 
 One-way analysis of means finds there is any significant difference
 across the whole dataset. If the p-value is **ABOVE** 0.05 the analysis
@@ -342,26 +373,26 @@ library(rstatix, quietly = T)
 
 ``` r
 library(dplyr, quietly = T)
-a549_multiple %>% games_howell_test(Value_norm~Condition)
+dataset_multiple %>% games_howell_test(Value_normalised~Condition)
 ```
 
     ## # A tibble: 6 × 8
-    ##   .y.        group1        group2 estimate conf.low conf.high p.adj p.adj.signif
-    ## * <chr>      <chr>         <chr>     <dbl>    <dbl>     <dbl> <dbl> <chr>       
-    ## 1 Value_norm Mock          cbRSV…     59.2    -65.6     184.  0.194 ns          
-    ## 2 Value_norm Mock          cbRSV…     17.1    -13.0      47.1 0.143 ns          
-    ## 3 Value_norm Mock          cbRSV…    197.    -406.      800.  0.343 ns          
-    ## 4 Value_norm cbRSV dNS1 0… cbRSV…    -42.1   -156.       72.2 0.325 ns          
-    ## 5 Value_norm cbRSV dNS1 0… cbRSV…    138.    -426.      702.  0.536 ns          
-    ## 6 Value_norm cbRSV dNS2 0… cbRSV…    180.    -420.      781.  0.388 ns
+    ##   .y.              group1  group2 estimate conf.low conf.high p.adj p.adj.signif
+    ## * <chr>            <chr>   <chr>     <dbl>    <dbl>     <dbl> <dbl> <chr>       
+    ## 1 Value_normalised Control Condi…     72.5    38.3      107.  0.012 *           
+    ## 2 Value_normalised Control Condi…     20.4     8.19      32.5 0.018 *           
+    ## 3 Value_normalised Control Condi…    269.    162.       376.  0.008 **          
+    ## 4 Value_normalised Condit… Condi…    -52.1   -81.2      -23.0 0.012 *           
+    ## 5 Value_normalised Condit… Condi…    197.    103.       290.  0.009 **          
+    ## 6 Value_normalised Condit… Condi…    249.    144.       354.  0.009 **
 
 P adj are the individual p values between group combinations.
 
 ### Single Comparison
 
 ``` r
-t.test(Value_norm~Condition, 
-       data=a549_single, 
+t.test(Value_normalised~Condition, 
+       data=dataset_single, 
        alternative='two.sided',
        var.equal=F)
 ```
@@ -369,13 +400,13 @@ t.test(Value_norm~Condition,
     ## 
     ##  Welch Two Sample t-test
     ## 
-    ## data:  Value_norm by Condition
-    ## t = -3.2839, df = 2.0013, p-value = 0.08148
-    ## alternative hypothesis: true difference in means between group Mock and group cbRSV dNS1 0.001-24 is not equal to 0
+    ## data:  Value_normalised by Condition
+    ## t = -14.699, df = 2.0003, p-value = 0.004593
+    ## alternative hypothesis: true difference in means between group Control and group Condition 1 is not equal to 0
     ## 95 percent confidence interval:
-    ##  -136.67077   18.31145
+    ##  -93.69241 -51.26690
     ## sample estimates:
-    ##                mean in group Mock mean in group cbRSV dNS1 0.001-24 
-    ##                           1.00000                          60.17966
+    ##     mean in group Control mean in group Condition 1 
+    ##                  1.033333                 73.512993
 
 Important parameters: t and p-value (include in reports)
