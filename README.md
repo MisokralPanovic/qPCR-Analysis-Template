@@ -235,7 +235,7 @@ plot_standard_curve <- plot_standard_curve +
 
     ## `geom_smooth()` using formula = 'y ~ x'
 
-![](copy_number_gapdh_normalised_Example_files/figure-gfm/standard_curve_plot_display,%20-1.png)<!-- -->
+![](Reports/copy_number_gapdh_normalised_Example_files/figure-gfm/standard_curve_plot_display,%20-1.png)<!-- -->
 
 ### Saving Figure
 
