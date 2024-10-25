@@ -9,9 +9,9 @@ Purpose:
 
 based on scripts:
 
-- standard curve
-- control gene Ct based
-- Copy number GAPDH normalised dataset
+- [standard curve](/Scripts/standard_curve.R)
+- [control gene Ct based](/Scripts/standard_curve.R)
+- [Copy number GAPDH normalised dataset](/Scripts/standard_curve.R)
 
 parameters incuded in script:
 
@@ -21,14 +21,14 @@ parameters incuded in script:
 - `cell_line`: MDBK
 - `conditions:` !r c(‘Mock’, ‘hRSV 1-24’, ‘bRSV dSH 1-24’, ‘bIFNa 5-24’)
 
-Link to stats pipeline?
+Link to [stats pipeline]()
 
 ## Libraries (maybe put them when they are used?)
 
 ``` r
-library(tidyverse)
-library(data.table)
-library(scales)
+library(tidyverse) # for data manipulation
+library(data.table) # for fast data reading and writing
+library(scales) # for log10 axis on figures
 ```
 
 # 1. Standard Curve
@@ -63,6 +63,8 @@ standard_curve_data <- fread('../Data/standard_curves_data.csv') %>%
 
 ### Construct Linear Model
 
+Text about what we do in this step
+
 ``` r
 model_standard_curve <- lm(log10(Copy_number)~Ct, data = standard_curve_data)
 ```
@@ -77,11 +79,12 @@ model_standard_curve <- lm(log10(Copy_number)~Ct, data = standard_curve_data)
 
 ### Construct a Prediction Based on the Linear Model
 
+Text about what we do in this step
+
 ``` r
 prediction_model_standard_curve <- 10^predict(
   model_standard_curve, 
-  interval = 'prediction'
-  )
+  interval = 'prediction')
 ```
 
     ## Warning in predict.lm(model_standard_curve, interval = "prediction"): predictions on current data refer to _future_ responses
@@ -96,11 +99,12 @@ prediction_model_standard_curve <- 10^predict(
 | 1.654456e+03 | 5.848611e+02 | 4.680130e+03 |
 | 1.117612e+02 | 3.650013e+01 | 3.422060e+02 |
 
+Text about what we do in this step
+
 ``` r
 data_combined_standard_curve <- cbind(
   standard_curve_data,
-  prediction_model_standard_curve
-  ) # save it to a variabel
+  prediction_model_standard_curve)
 ```
 
 | Ct | Copy_number | Primer_set | Target | Experiment | Additional_info | fit | lwr | upr |
@@ -117,8 +121,6 @@ data_combined_standard_curve <- cbind(
 
 Some text about what the fuck are we doing
 
-Put amplification efficiency equation
-
 ``` math
 \text{Amplification Efficiency} = 10^{-1/\text{slope}}-1
 ```
@@ -126,32 +128,35 @@ Put amplification efficiency equation
 ``` r
 efficiency_standard_curve <- paste(
   round(
-    (10^(-1/ lm(Ct~log10(Copy_number), 
-                data = standard_curve_data)[[1]][2]) -1)*100, 
-    digits = 2), 
-  '% Amplification Efficiency', 
-  sep = ''
-  ) # save it as a variable
+    (10^(-1/ lm(Ct~log10(Copy_number),
+                data = standard_curve_data)[[1]][2]) -1)*100,
+    digits = 2),
+  '% Amplification Efficiency',
+  sep = '')
 ```
 
     ## [1] "110% Amplification Efficiency"
 
-## Figure
+## Figure of Standard Curve
 
 ### Constructing Figure
 
+Text about what we do in this step
+
 ``` r
-plot_title_standardCurve <- paste(params$target_gene, 
+plot_title_standard_curve <- paste(params$target_gene, 
                     '-', 
                     params$primer_set,
                     'Standard Curve', 
                     sep = " ")
-x_annotation_position_standardCurve <- 1000000
-y_annotation_position_standardCurve <- 37.5
-top_range_standardCurve <- 40
-y_axis_title_standardCurve <- 'Cycle Threshold'
-x_axis_title_standardCurve <- 'Copy Number'
+x_annotation_position_standard_curve <- 1000000
+y_annotation_position_standard_curve <- 37.5
+top_range_standard_curve <- 40
+y_axis_title_standard_curve <- 'Cycle Threshold'
+x_axis_title_standard_curve <- 'Copy Number'
 ```
+
+Text about what we do in this step
 
 ``` r
 plot_standard_curve <- ggplot(
@@ -161,21 +166,23 @@ plot_standard_curve <- ggplot(
   geom_point() +
   stat_smooth(method = lm) +
   labs(
-    title = plot_title_standardCurve,
-    y = x_axis_title_standardCurve,
-    x = y_axis_title_standardCurve
-  )
+    title = plot_title_standard_curve,
+    y = x_axis_title_standard_curve,
+    x = y_axis_title_standard_curve)
 ```
+
+Text about what we do in this step
 
 ``` r
 plot_standard_curve <- plot_standard_curve +
   scale_y_continuous(
     breaks = seq(from = 0, 
-                 to = top_range_standardCurve, 
+                 to = top_range_standard_curve, 
                  by = 10),
-    limits = c(0,top_range_standardCurve)
-  )
+    limits = c(0,top_range_standard_curve))
 ```
+
+Text about what we do in this step
 
 ``` r
 plot_standard_curve <- plot_standard_curve +
@@ -183,10 +190,11 @@ plot_standard_curve <- plot_standard_curve +
     labels = trans_format("log10", 
                           math_format(10^.x)),
     breaks = trans_breaks("log10", 
-                          function(x) 10^x)
-  ) +
+                          function(x) 10^x)) +
   annotation_logticks(sides='b')
 ```
+
+Text about what we do in this step
 
 ``` r
 plot_standard_curve <- plot_standard_curve +
@@ -196,8 +204,7 @@ plot_standard_curve <- plot_standard_curve +
     size = 15, 
     face = 'bold', 
     margin = margin(8, 0, 8, 0), 
-    hjust = 0.5
-  ),
+    hjust = 0.5),
   axis.text.y = element_text(
     angle = 0, 
     size = 9, 
@@ -216,24 +223,27 @@ plot_standard_curve <- plot_standard_curve +
     face='bold', 
     vjust=-0.5, 
     margin = margin(0, 8, 0, 0)),
-  aspect.ratio = 1/2
-)
+  aspect.ratio = 1/2)
 ```
+
+Text about what we do in this step
 
 ``` r
 plot_standard_curve <- plot_standard_curve +
   annotate('text',
-           y = y_annotation_position_standardCurve, 
-           x = x_annotation_position_standardCurve, 
+           y = y_annotation_position_standard_curve, 
+           x = x_annotation_position_standard_curve, 
            label = efficiency_standard_curve, 
            size = 5)
 ```
 
     ## `geom_smooth()` using formula = 'y ~ x'
 
-![](/Reports/copy_number_gapdh_normalised_Example_files/figure-gfm/standard_curve_plot_display,%20-1.png)<!-- -->
+![](copy_number_gapdh_normalised_Example_files/figure-gfm/standard_curve_plot_display,%20-1.png)<!-- -->
 
 ### Saving Figure
+
+Text about what we do in this step
 
 ``` r
 ggsave(filename = paste(
@@ -264,7 +274,7 @@ Load `ct_data.csv` from `/Data` folder, and filter the target gene and
 primer set used based on the declared parameters in YAML.
 
 ``` r
-housekeeping_gene_data <- fread('../Data/ct_data.csv') %>% 
+housekeeping_data <- fread('../Data/ct_data.csv') %>% 
   filter(Target == params$housekeeping_gene, 
          Cell_line == params$cell_line,
          Condition %in% params$conditions)
@@ -287,9 +297,9 @@ housekeeping_gene_data <- fread('../Data/ct_data.csv') %>%
 
 ## Processing Data
 
-wriet about what the fuck is happening
+write about what the fuck is happening
 
-equation for ddCt
+equation for ddCt for housekeeping (CHANGE ME!!!)
 
 ``` math
 \text{Relative Quantification} = 2^{\Updelta\Updelta \text{Ct}}
@@ -308,7 +318,7 @@ equation for ddCt
 ```
 
 ``` r
-housekeeping_gene_data <- housekeeping_gene_data |> mutate(
+ddct_housekeeping_data <- housekeeping_data |> mutate(
   control_mean = mean(
     Ct[Condition == params$conditions[1]],
     na.rm = T),
@@ -316,11 +326,10 @@ housekeeping_gene_data <- housekeeping_gene_data |> mutate(
   control_mean_log = mean(
     log2_dCt[Condition == params$conditions[1]],
     na.rm = T),
-  Value_norm = log2_dCt / control_mean_log
-)
+  Value_normalised = log2_dCt / control_mean_log)
 ```
 
-| Ct | Target | Condition | Cell_line | Additional_info | control_mean | log2_dCt | control_mean_log | Value_norm |
+| Ct | Target | Condition | Cell_line | Additional_info | control_mean | log2_dCt | control_mean_log | Value_normalised |
 |---:|:---|:---|:---|:---|---:|---:|---:|---:|
 | 21.78984 | bGAPDH | bIFNa 5-24 | MDBK | NA | 22.13742 | 1.2724156 | 1.0021 | 1.2697492 |
 | 22.09733 | bGAPDH | bIFNa 5-24 | MDBK | NA | 22.13742 | 1.0281716 | 1.0021 | 1.0260170 |
@@ -337,12 +346,12 @@ housekeeping_gene_data <- housekeeping_gene_data |> mutate(
 
 ## Factorisation
 
-REMANE ME!!!
+Text about what we do in this step
 
 ``` r
-housekeeping_gene_data <- aggregate(x=housekeeping_gene_data, 
-                                    by=list(housekeeping_gene_data$Condition),
-                                    FUN = mean)
+aggregated_housekeeping_data <- aggregate(x=ddct_housekeeping_data, 
+                               by=list(ddct_housekeeping_data$Condition),
+                               FUN = mean)
 ```
 
     ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
@@ -370,12 +379,47 @@ housekeeping_gene_data <- aggregate(x=housekeeping_gene_data,
     ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
     ## returning NA
 
+| Group.1 | Ct | Target | Condition | Cell_line | Additional_info | control_mean | log2_dCt | control_mean_log | Value_normalised |
+|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| bIFNa 5-24 | 21.78575 | NA | NA | NA | NA | 22.13742 | 1.2962402 | 1.0021 | 1.293524 |
+| bRSV dSH 1-24 | 25.67625 | NA | NA | NA | NA | 22.13742 | 0.0897872 | 1.0021 | 0.089599 |
+| hRSV 1-24 | 22.16476 | NA | NA | NA | NA | 22.13742 | 1.0613921 | 1.0021 | 1.059168 |
+| Mock | 22.13742 | NA | NA | NA | NA | 22.13742 | 1.0020999 | 1.0021 | 1.000000 |
+
+Text about what we do in this step
+
 ``` r
-housekeeping_gene_data <- housekeeping_gene_data %>%
+arranged_aggregated_housekeeping_data <- aggregated_housekeeping_data %>%
   arrange(match(Group.1, params$conditions))
-
-housekeeping_factor_vector <- rep(housekeeping_gene_data$Value_norm, each=3)
 ```
+
+| Group.1 | Ct | Target | Condition | Cell_line | Additional_info | control_mean | log2_dCt | control_mean_log | Value_normalised |
+|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Mock | 22.13742 | NA | NA | NA | NA | 22.13742 | 1.0020999 | 1.0021 | 1.000000 |
+| hRSV 1-24 | 22.16476 | NA | NA | NA | NA | 22.13742 | 1.0613921 | 1.0021 | 1.059168 |
+| bRSV dSH 1-24 | 25.67625 | NA | NA | NA | NA | 22.13742 | 0.0897872 | 1.0021 | 0.089599 |
+| bIFNa 5-24 | 21.78575 | NA | NA | NA | NA | 22.13742 | 1.2962402 | 1.0021 | 1.293524 |
+
+Text about what we do in this step
+
+``` r
+housekeeping_factor_vector <- rep(arranged_aggregated_housekeeping_data$Value_normalised, each=3)
+```
+
+|        x |
+|---------:|
+| 1.000000 |
+| 1.000000 |
+| 1.000000 |
+| 1.059168 |
+| 1.059168 |
+| 1.059168 |
+| 0.089599 |
+| 0.089599 |
+| 0.089599 |
+| 1.293524 |
+| 1.293524 |
+| 1.293524 |
 
 # 3. Factorised Copy Number Extrapolation
 
@@ -410,7 +454,9 @@ target_data <- fread('../Data/copy_number_extrapolation_data.csv') %>%
 | NA          | 26.95577 | bIFIT1 | Mock          | MDBK      | NA              |
 | NA          | 26.59759 | bIFIT1 | Mock          | MDBK      | NA              |
 
-## Copy number extrapolation
+## Data Wrangling
+
+### Copy number extrapolation
 
 ``` r
 target_data_modelled <- target_data |> 
@@ -434,7 +480,7 @@ target_data_modelled <- target_data |>
 |   87.352478 | 26.95577 | bIFIT1 | Mock          | MDBK      | NA              |
 |  113.810273 | 26.59759 | bIFIT1 | Mock          | MDBK      | NA              |
 
-## Factorisation based on housekeeping gene levels
+### Factorisation based on housekeeping gene levels
 
 wriet about what the fuck is happening
 
@@ -465,11 +511,11 @@ target_data_modelled_ddct_factorised <- target_data_modelled |>
       Copy_number_modified[Condition == params$conditions[1]], 
       na.rm = T
     ),
-    Value_normalised = Copy_number_modified / Control_mean
+    Value_normalisedalised = Copy_number_modified / Control_mean
   )
 ```
 
-| Copy_number | Ct | Target | Condition | Cell_line | Additional_info | Factor | Copy_number_modified | Control_mean | Value_normalised |
+| Copy_number | Ct | Target | Condition | Cell_line | Additional_info | Factor | Copy_number_modified | Control_mean | Value_normalisedalised |
 |---:|---:|:---|:---|:---|:---|---:|---:|---:|---:|
 | 333.639607 | 25.14157 | bIFIT1 | bIFNa 5-24 | MDBK | NA | 1.000000 | 333.639607 | 76.11196 | 4.3835371 |
 | 330.521864 | 25.15428 | bIFIT1 | bIFNa 5-24 | MDBK | NA | 1.000000 | 330.521864 | 76.11196 | 4.3425745 |
@@ -484,7 +530,7 @@ target_data_modelled_ddct_factorised <- target_data_modelled |>
 | 87.352478 | 26.95577 | bIFIT1 | Mock | MDBK | NA | 1.293524 | 67.530628 | 76.11196 | 0.8872538 |
 | 113.810273 | 26.59759 | bIFIT1 | Mock | MDBK | NA | 1.293524 | 87.984673 | 76.11196 | 1.1559901 |
 
-## Save data
+#### Save data
 
 ``` r
 fwrite(target_data_modelled_ddct_factorised, 
@@ -497,25 +543,25 @@ fwrite(target_data_modelled_ddct_factorised,
 ## Statistics
 
 based on the [statistics
-pipeline](../Reports/Templates/Statistic-pipeline.md)
+pipeline](Reports\Templates\Statistics-pipeline.md)
 
 ### Visual Assesment
 
 #### Normal Distribution by Boxplot
 
 ``` r
-boxplot(Value_normalised~Condition, target_data_modelled_ddct_factorised)
+boxplot(Value_normalisedalised~Condition, target_data_modelled_ddct_factorised)
 ```
 
-![](/Reports/copy_number_gapdh_normalised_Example_files/figure-gfm/stats_boxplot-1.png)<!-- -->
+![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_boxplot-1.png)<!-- -->
 
 #### Testing equality of variance assumptions
 
 ``` r
-plot(lm(Value_normalised~Condition, target_data_modelled_ddct_factorised))
+plot(lm(Value_normalisedalised~Condition, target_data_modelled_ddct_factorised))
 ```
 
-![](/Reports/copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-1.png)<!-- -->![](/Reports/copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-2.png)<!-- -->![](/Reports/copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-3.png)<!-- -->![](/Reports/copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-4.png)<!-- -->
+![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-1.png)<!-- -->![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-2.png)<!-- -->![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-3.png)<!-- -->![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-4.png)<!-- -->
 
 **1st and the last plots:** we want symmetrical data about the 0
 horizontal line
@@ -530,43 +576,43 @@ line as possible
 **p value \> 0.05 means normal distribution**
 
 ``` r
-shapiro.test(target_data_modelled_ddct_factorised$Value_normalised[1:3]) # test all values in one condition
+shapiro.test(target_data_modelled_ddct_factorised$Value_normalisedalised[1:3]) # test all values in one condition
 ```
 
     ## 
     ##  Shapiro-Wilk normality test
     ## 
-    ## data:  target_data_modelled_ddct_factorised$Value_normalised[1:3]
+    ## data:  target_data_modelled_ddct_factorised$Value_normalisedalised[1:3]
     ## W = 0.82587, p-value = 0.1779
 
 ``` r
-shapiro.test(target_data_modelled_ddct_factorised$Value_normalised[4:6]) # test all values in one condition
+shapiro.test(target_data_modelled_ddct_factorised$Value_normalisedalised[4:6]) # test all values in one condition
 ```
 
     ## 
     ##  Shapiro-Wilk normality test
     ## 
-    ## data:  target_data_modelled_ddct_factorised$Value_normalised[4:6]
+    ## data:  target_data_modelled_ddct_factorised$Value_normalisedalised[4:6]
     ## W = 0.96452, p-value = 0.6381
 
 ``` r
-shapiro.test(target_data_modelled_ddct_factorised$Value_normalised[7:9]) # test all values in one condition
+shapiro.test(target_data_modelled_ddct_factorised$Value_normalisedalised[7:9]) # test all values in one condition
 ```
 
     ## 
     ##  Shapiro-Wilk normality test
     ## 
-    ## data:  target_data_modelled_ddct_factorised$Value_normalised[7:9]
+    ## data:  target_data_modelled_ddct_factorised$Value_normalisedalised[7:9]
     ## W = 0.87185, p-value = 0.3008
 
 ``` r
-shapiro.test(residuals(lm(Value_normalised~Condition, target_data_modelled_ddct_factorised))) # test all values in the whole dataset
+shapiro.test(residuals(lm(Value_normalisedalised~Condition, target_data_modelled_ddct_factorised))) # test all values in the whole dataset
 ```
 
     ## 
     ##  Shapiro-Wilk normality test
     ## 
-    ## data:  residuals(lm(Value_normalised ~ Condition, target_data_modelled_ddct_factorised))
+    ## data:  residuals(lm(Value_normalisedalised ~ Condition, target_data_modelled_ddct_factorised))
     ## W = 0.68791, p-value = 0.0006461
 
 **NON NORMAL DISTRIBUTION**
@@ -591,7 +637,7 @@ library(car, quietly = TRUE)
     ##     some
 
 ``` r
-leveneTest(Value_normalised~Condition, target_data_modelled_ddct_factorised)
+leveneTest(Value_normalisedalised~Condition, target_data_modelled_ddct_factorised)
 ```
 
     ## Warning in leveneTest.default(y = y, group = group, ...): group coerced to
@@ -608,7 +654,7 @@ leveneTest(Value_normalised~Condition, target_data_modelled_ddct_factorised)
 
 ``` r
 library(dunn.test, quietly = T)
-dunn.test(target_data_modelled_ddct_factorised$Value_normalised, 
+dunn.test(target_data_modelled_ddct_factorised$Value_normalisedalised, 
           target_data_modelled_ddct_factorised$Condition, 
           altp=T,
           list=T)
@@ -666,9 +712,11 @@ bIFNa 5-24 - Mock : 1.019049 (0.3082) bRSV dSH 1-24 - Mock : -1.019049
 
 ## Plotting Final Figure
 
+### Constructing Figure
+
 ``` r
 plot_normalised_values <- ggplot(target_data_modelled_ddct_factorised %>% filter(Condition != params$conditions[1])) +
-  aes(x = Value_normalised, 
+  aes(x = Value_normalisedalised, 
       y = fct_rev(fct_relevel(Condition, 
                               params$conditions[2], 
                               params$conditions[3],
@@ -708,9 +756,9 @@ plot_normalised_values <- plot_normalised_values +
 ``` r
 plot_normalised_values <- plot_normalised_values +
   
-  annotate("text", size = 2, fontface = "bold", hjust = 0, x = 600, y = params$conditions[2],  label = "0.0415") +
-  annotate("text", size = 2, fontface = "bold", hjust = 0, x = 600, y = params$conditions[3], label = "0.3082") +
-  annotate("text", size = 2, fontface = "bold", hjust = 0, x = 600, y = params$conditions[4], label = "0.3082")
+  annotate("text", size = 3, fontface = "bold", x = 600, y = params$conditions[2],  label = "0.0415") +
+  annotate("text", size = 3, fontface = "bold", x = 600, y = params$conditions[3], label = "0.3082") +
+  annotate("text", size = 3, fontface = "bold", x = 600, y = params$conditions[4], label = "0.3082")
 ```
 
 ``` r
@@ -718,31 +766,31 @@ plot_normalised_values <- plot_normalised_values +
   theme_classic() +
   theme(
     plot.title = element_text(
-      size = 8, 
+      size = 15, 
       face = 'bold', 
       margin = margin(0, 0, 5, 0), 
       hjust = 0.5
     ),
     axis.text.y = element_text(
       angle=0, 
-      size=6, 
+      size=9, 
       vjust=0.2),
     axis.title.x = element_text(
-      size = 7, 
+      size = 12, 
       face='bold', 
       vjust=-0.5, 
       margin = margin(0, 0, 0, 0)),
     axis.title.y = element_blank(),
     axis.text.x=element_text(
       angle=0, 
-      size=6, 
+      size=9, 
       vjust=0.5),
     axis.ticks.y=element_blank(),
     panel.grid.major.y = element_line(color = "gray86",
                                       size = 0.1,
                                       linetype = 1),
-    legend.position = "none"
-  )
+    legend.position = "none",
+    aspect.ratio = 1/2)
 ```
 
     ## Warning: The `size` argument of `element_line()` is deprecated as of ggplot2 3.4.0.
@@ -771,9 +819,9 @@ plot_normalised_values <- plot_normalised_values  +
 plot_normalised_values
 ```
 
-![](/Reports/copy_number_gapdh_normalised_Example_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](copy_number_gapdh_normalised_Example_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
-#### Save plot
+### Save plot
 
 ``` r
 ggsave(filename = paste(
