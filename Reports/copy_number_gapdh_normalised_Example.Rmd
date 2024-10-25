@@ -22,11 +22,11 @@ library(rmarkdown)
 library(rprojroot)
 ```
 
-```{r set_project_root, include=F}
-root <- find_root(has_file("README.md"))
-setwd(root)
+```{r set_project_root, include=FALSE}
+# Set the working directory to the project root for consistent relative paths
+#setwd("../..")
+knitr::opts_knit$set(root.dir = setwd("../.."))  # Ensure all chunks use the project root as base
 ```
-
 
 # Introduction
 

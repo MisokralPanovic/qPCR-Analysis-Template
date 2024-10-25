@@ -231,7 +231,7 @@ plot_standard_curve <- plot_standard_curve +
 
     ## `geom_smooth()` using formula = 'y ~ x'
 
-![](copy_number_gapdh_normalised_Example_files/figure-gfm/standard_curve_plot_display,%20-1.png)<!-- -->
+![](/Reports/copy_number_gapdh_normalised_Example_files/figure-gfm/standard_curve_plot_display,%20-1.png)<!-- -->
 
 ### Saving Figure
 
@@ -507,7 +507,7 @@ pipeline](../Reports/Templates/Statistic-pipeline.md)
 boxplot(Value_normalised~Condition, target_data_modelled_ddct_factorised)
 ```
 
-![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_boxplot-1.png)<!-- -->
+![](/Reports/copy_number_gapdh_normalised_Example_files/figure-gfm/stats_boxplot-1.png)<!-- -->
 
 #### Testing equality of variance assumptions
 
@@ -515,7 +515,7 @@ boxplot(Value_normalised~Condition, target_data_modelled_ddct_factorised)
 plot(lm(Value_normalised~Condition, target_data_modelled_ddct_factorised))
 ```
 
-![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-1.png)<!-- -->![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-2.png)<!-- -->![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-3.png)<!-- -->![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-4.png)<!-- -->
+![](/Reports/copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-1.png)<!-- -->![](/Reports/copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-2.png)<!-- -->![](/Reports/copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-3.png)<!-- -->![](/Reports/copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-4.png)<!-- -->
 
 **1st and the last plots:** we want symmetrical data about the 0
 horizontal line
@@ -771,7 +771,7 @@ plot_normalised_values <- plot_normalised_values  +
 plot_normalised_values
 ```
 
-![](copy_number_gapdh_normalised_Example_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](/Reports/copy_number_gapdh_normalised_Example_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 #### Save plot
 
