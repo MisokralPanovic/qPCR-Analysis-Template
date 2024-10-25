@@ -9,12 +9,7 @@ params:
     primer_set: PS11
     cell_line: MDBK
     housekeeping_gene: bGAPDH
-    conditions: !r c('Mock', 'hRSV 1-24', 'bRSV dSH 1-24')
-    colors: !r c('#999999', '#ffc034', '#9a6a00')
-    statistics: "Normal distribution and equal variance"
-    pvals: !r c(0.9935156, 0.1817141)
-    range: 14
-    breaks: 2
+    conditions: !r c('Mock', 'hRSV 1-24', 'bRSV dSH 1-24', 'bIFNa 5-24')
 editor_options: 
   markdown: 
     wrap: 72
@@ -32,6 +27,7 @@ knitr::read_chunk("../Report/Templates/external_chunk.R")
 library(knitr)
 library(kableExtra)
 library(rmarkdown)
+setwd("../")
 ```
 
 # Introduction
@@ -47,13 +43,10 @@ based on scripts:
 parameters incuded in script:
 
 -   `target_gene:` bIFIT1
+-   `primer_set`: PS11
 -   `housekeeping_gene:` bGAPDH
--   `conditions:` !r c('Mock', 'phRSV 1-24','bIFNa 5-6')
--   `colors:` !r c('#999999', '#ffc034', '#9a6a00')
--   `statistics:` "Normal distribution and equal variance"
--   `pvals:` !r c(0.9935156, 0.1817141)
--   `range:` 14
--   `breaks:` 2
+-   `cell_line`: MDBK
+-   `conditions:` !r c('Mock', 'hRSV 1-24', 'bRSV dSH 1-24', 'bIFNa 5-24')
 
 Link to stats pipeline?
 
@@ -62,7 +55,6 @@ Link to stats pipeline?
 ```{r required_libraries, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(data.table)
-library(ggsignif)
 library(scales)
 ```
 
@@ -388,10 +380,6 @@ target_data_modelled <- target_data |>
 target_data_modelled |> kable()
 ```
 
-## Save data
-
-PUT CODE TO SAVE ANALYSED DATA
-
 ## Factorisation based on housekeeping gene levels
 
 wriet about what the fuck is happening
@@ -429,6 +417,15 @@ target_data_modelled_ddct_factorised <- target_data_modelled |>
 target_data_modelled_ddct_factorised |> kable()
 ```
 
+## Save data
+
+```{r save_data}
+fwrite(target_data_modelled_ddct_factorised, 
+       paste('../Adjusted-Data/', 
+             paste('Analysed', params$target_gene, sep = "_"), 
+             '.csv', 
+             sep = ''))
+```
 
 ## Statistics
 
@@ -502,39 +499,102 @@ The dunn test displays both comparison matrix and comparison list of tested grou
 
 Group-wise comparison is below:
 
-bRSV dSH 1-24 - hRSV 1-24 : -1.341640 (0.1797)
-bRSV dSH 1-24 - Mock      : -2.683281 (0.0073)*
-hRSV 1-24 - Mock          : -1.341640 (0.1797)
+bIFNa 5-24 - Mock          :  1.019049 (0.3082)
+bRSV dSH 1-24 - Mock       : -1.019049 (0.3082)
+hRSV 1-24 - Mock           :  2.038098 (0.0415)*
 
-## Plotting
-
-
+## Plotting Final Figure
 
 
-
-
-
-
-
-
-```{r significance_bars, eval=FALSE}
-plot_target_data +
-  geom_signif(
-    comparisons = list(c(
-      params$conditions[1], 
-      params$conditions[2])), 
-    annotation = params$pvals[1], 
-    y_position = 0.93*params$range - 1*(params$range*0.075), 
-    tip_length = 0, vjust= -0.2, size = 0.7,
-    textsize = textsize_values[1]) +
-              
-  geom_signif(
-    comparisons = list(c(
-      params$conditions[1], 
-      params$conditions[3])), 
-    annotation = params$pvals[2], 
-    y_position = 0.93*params$range - 0*(params$range*0.075), 
-    tip_length = 0, vjust= -0.2, size = 0.7, 
-    textsize = textsize_values[2])
+```{r final_figure_initial_ggplot}
+plot_normalised_values <- ggplot(target_data_modelled_ddct_factorised %>% filter(Condition != params$conditions[1])) +
+  aes(x = Value_normalised, 
+      y = fct_rev(fct_relevel(Condition, 
+                              params$conditions[2], 
+                              params$conditions[3],
+                              params$conditions[4]))) +
+  geom_jitter(shape=17, size=2, width = 0, height = 0.3, color="#131112") +
+  stat_summary(fun.y=median, geom="point", size=1.8, color="#A41237") 
 ```
+
+
+
+```{r}
+plot_normalised_values <- plot_normalised_values +
+  labs(
+    title = paste("Gene Expression", params$target_gene, sep = " "),
+    y = NULL,
+    x = 'Fold Change'
+  ) +
+  scale_x_continuous(trans = log2_trans(),
+                     breaks = trans_breaks("log2", function(x) 2^x, n = 8),
+                     labels = trans_format("log2", math_format(2^.x)),
+                     limits = c(2^-5,2^10),
+                     sec.axis = sec_axis(trans = identity,
+                                         breaks = c(2^-4, 2^-2, 2^0, 2^2, 2^4, 2^6, 2^8, 2^10),
+                                         labels = c(0.062, 0.25, 1, 4, 16, 64, 256, 1024)))
+```
+
+```{r}
+plot_normalised_values <- plot_normalised_values +
+  
+  annotate("text", size = 2, fontface = "bold", hjust = 0, x = 600, y = params$conditions[2],  label = "0.0415") +
+  annotate("text", size = 2, fontface = "bold", hjust = 0, x = 600, y = params$conditions[3], label = "0.3082") +
+  annotate("text", size = 2, fontface = "bold", hjust = 0, x = 600, y = params$conditions[4], label = "0.3082")
+```
+
+```{r final_figure_theme}
+plot_normalised_values <- plot_normalised_values +
+  theme_classic() +
+  theme(
+    plot.title = element_text(
+      size = 8, 
+      face = 'bold', 
+      margin = margin(0, 0, 5, 0), 
+      hjust = 0.5
+    ),
+    axis.text.y = element_text(
+      angle=0, 
+      size=6, 
+      vjust=0.2),
+    axis.title.x = element_text(
+      size = 7, 
+      face='bold', 
+      vjust=-0.5, 
+      margin = margin(0, 0, 0, 0)),
+    axis.title.y = element_blank(),
+    axis.text.x=element_text(
+      angle=0, 
+      size=6, 
+      vjust=0.5),
+    axis.ticks.y=element_blank(),
+    panel.grid.major.y = element_line(color = "gray86",
+                                      size = 0.1,
+                                      linetype = 1),
+    legend.position = "none"
+  )
+```
+
+```{r final_figure_annotation_lines}
+plot_normalised_values <- plot_normalised_values  +
+  geom_vline(xintercept = 1, 
+             linetype = "dotted", 
+             color = '#2e222f', 
+             linewidth = 1) +
+  geom_vline(xintercept = 4, 
+             linetype = "dotted", 
+             color ="#A41237", 
+             linewidth = 1) +
+  geom_vline(xintercept = 0.25, 
+             linetype = "dotted", 
+             color = "#A41237", 
+             linewidth = 1)
+```
+
+
+```{r}
+plot_normalised_values
+```
+
+Some final text
 

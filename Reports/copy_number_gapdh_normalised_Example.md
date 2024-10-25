@@ -1,7 +1,7 @@
 Example of qPCR Pipeline Usage
 ================
 Michal Varga
-Last edited: 2024-10-24
+Last edited: 2024-10-25
 
 # Introduction
 
@@ -16,13 +16,10 @@ based on scripts:
 parameters incuded in script:
 
 - `target_gene:` bIFIT1
+- `primer_set`: PS11
 - `housekeeping_gene:` bGAPDH
-- `conditions:` !r c(‘Mock’, ‘phRSV 1-24’,‘bIFNa 5-6’)
-- `colors:` !r c(‘\#999999’, ‘\#ffc034’, ‘\#9a6a00’)
-- `statistics:` “Normal distribution and equal variance”
-- `pvals:` !r c(0.9935156, 0.1817141)
-- `range:` 14
-- `breaks:` 2
+- `cell_line`: MDBK
+- `conditions:` !r c(‘Mock’, ‘hRSV 1-24’, ‘bRSV dSH 1-24’, ‘bIFNa 5-24’)
 
 Link to stats pipeline?
 
@@ -31,7 +28,6 @@ Link to stats pipeline?
 ``` r
 library(tidyverse)
 library(data.table)
-library(ggsignif)
 library(scales)
 ```
 
@@ -276,6 +272,9 @@ housekeeping_gene_data <- fread('../Data/ct_data.csv') %>%
 
 |       Ct | Target | Condition     | Cell_line | Additional_info |
 |---------:|:-------|:--------------|:----------|:----------------|
+| 21.78984 | bGAPDH | bIFNa 5-24    | MDBK      | NA              |
+| 22.09733 | bGAPDH | bIFNa 5-24    | MDBK      | NA              |
+| 21.47008 | bGAPDH | bIFNa 5-24    | MDBK      | NA              |
 | 25.22434 | bGAPDH | bRSV dSH 1-24 | MDBK      | NA              |
 | 26.25955 | bGAPDH | bRSV dSH 1-24 | MDBK      | NA              |
 | 25.54487 | bGAPDH | bRSV dSH 1-24 | MDBK      | NA              |
@@ -323,6 +322,9 @@ housekeeping_gene_data <- housekeeping_gene_data |> mutate(
 
 | Ct | Target | Condition | Cell_line | Additional_info | control_mean | log2_dCt | control_mean_log | Value_norm |
 |---:|:---|:---|:---|:---|---:|---:|---:|---:|
+| 21.78984 | bGAPDH | bIFNa 5-24 | MDBK | NA | 22.13742 | 1.2724156 | 1.0021 | 1.2697492 |
+| 22.09733 | bGAPDH | bIFNa 5-24 | MDBK | NA | 22.13742 | 1.0281716 | 1.0021 | 1.0260170 |
+| 21.47008 | bGAPDH | bIFNa 5-24 | MDBK | NA | 22.13742 | 1.5881333 | 1.0021 | 1.5848053 |
 | 25.22434 | bGAPDH | bRSV dSH 1-24 | MDBK | NA | 22.13742 | 0.1176908 | 1.0021 | 0.1174441 |
 | 26.25955 | bGAPDH | bRSV dSH 1-24 | MDBK | NA | 22.13742 | 0.0574268 | 1.0021 | 0.0573064 |
 | 25.54487 | bGAPDH | bRSV dSH 1-24 | MDBK | NA | 22.13742 | 0.0942440 | 1.0021 | 0.0940465 |
@@ -343,6 +345,12 @@ housekeeping_gene_data <- aggregate(x=housekeeping_gene_data,
                                     FUN = mean)
 ```
 
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
     ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
     ## returning NA
     ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
@@ -389,9 +397,12 @@ target_data <- fread('../Data/copy_number_extrapolation_data.csv') %>%
 
 | Copy_number |       Ct | Target | Condition     | Cell_line | Additional_info |
 |:------------|---------:|:-------|:--------------|:----------|:----------------|
-| NA          | 25.90040 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
-| NA          | 25.76134 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
-| NA          | 25.85236 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
+| NA          | 25.14157 | bIFIT1 | bIFNa 5-24    | MDBK      | NA              |
+| NA          | 25.15428 | bIFIT1 | bIFNa 5-24    | MDBK      | NA              |
+| NA          | 25.27119 | bIFIT1 | bIFNa 5-24    | MDBK      | NA              |
+| NA          | 29.90040 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
+| NA          | 29.76134 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
+| NA          | 29.85236 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
 | NA          | 23.95345 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
 | NA          | 23.68442 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
 | NA          | 23.90436 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
@@ -410,19 +421,18 @@ target_data_modelled <- target_data |>
 
 | Copy_number |       Ct | Target | Condition     | Cell_line | Additional_info |
 |------------:|---------:|:-------|:--------------|:----------|:----------------|
-|   190.47700 | 25.90040 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
-|   211.08230 | 25.76134 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
-|   197.35705 | 25.85236 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
-|   802.47089 | 23.95345 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
-|   978.89747 | 23.68442 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
-|   832.10689 | 23.90436 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
-|    94.19516 | 26.85368 | bIFIT1 | Mock          | MDBK      | NA              |
-|    87.35248 | 26.95577 | bIFIT1 | Mock          | MDBK      | NA              |
-|   113.81027 | 26.59759 | bIFIT1 | Mock          | MDBK      | NA              |
-
-## Save data
-
-PUT CODE TO SAVE ANALYSED DATA
+|  333.639607 | 25.14157 | bIFIT1 | bIFNa 5-24    | MDBK      | NA              |
+|  330.521864 | 25.15428 | bIFIT1 | bIFNa 5-24    | MDBK      | NA              |
+|  303.176194 | 25.27119 | bIFIT1 | bIFNa 5-24    | MDBK      | NA              |
+|    9.922701 | 29.90040 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
+|   10.996113 | 29.76134 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
+|   10.281110 | 29.85236 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
+|  802.470892 | 23.95345 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
+|  978.897474 | 23.68442 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
+|  832.106893 | 23.90436 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
+|   94.195160 | 26.85368 | bIFIT1 | Mock          | MDBK      | NA              |
+|   87.352478 | 26.95577 | bIFIT1 | Mock          | MDBK      | NA              |
+|  113.810273 | 26.59759 | bIFIT1 | Mock          | MDBK      | NA              |
 
 ## Factorisation based on housekeeping gene levels
 
@@ -461,15 +471,28 @@ target_data_modelled_ddct_factorised <- target_data_modelled |>
 
 | Copy_number | Ct | Target | Condition | Cell_line | Additional_info | Factor | Copy_number_modified | Control_mean | Value_normalised |
 |---:|---:|:---|:---|:---|:---|---:|---:|---:|---:|
-| 190.47700 | 25.90040 | bIFIT1 | bRSV dSH 1-24 | MDBK | NA | 1.000000 | 190.4770 | 1098.814 | 0.1733479 |
-| 211.08230 | 25.76134 | bIFIT1 | bRSV dSH 1-24 | MDBK | NA | 1.000000 | 211.0823 | 1098.814 | 0.1921002 |
-| 197.35705 | 25.85236 | bIFIT1 | bRSV dSH 1-24 | MDBK | NA | 1.000000 | 197.3570 | 1098.814 | 0.1796092 |
-| 802.47089 | 23.95345 | bIFIT1 | hRSV 1-24 | MDBK | NA | 1.059168 | 757.6427 | 1098.814 | 0.6895098 |
-| 978.89747 | 23.68442 | bIFIT1 | hRSV 1-24 | MDBK | NA | 1.059168 | 924.2136 | 1098.814 | 0.8411014 |
-| 832.10689 | 23.90436 | bIFIT1 | hRSV 1-24 | MDBK | NA | 1.059168 | 785.6232 | 1098.814 | 0.7149740 |
-| 94.19516 | 26.85368 | bIFIT1 | Mock | MDBK | NA | 0.089599 | 1051.2966 | 1098.814 | 0.9567561 |
-| 87.35248 | 26.95577 | bIFIT1 | Mock | MDBK | NA | 0.089599 | 974.9266 | 1098.814 | 0.8872538 |
-| 113.81027 | 26.59759 | bIFIT1 | Mock | MDBK | NA | 0.089599 | 1270.2177 | 1098.814 | 1.1559901 |
+| 333.639607 | 25.14157 | bIFIT1 | bIFNa 5-24 | MDBK | NA | 1.000000 | 333.639607 | 76.11196 | 4.3835371 |
+| 330.521864 | 25.15428 | bIFIT1 | bIFNa 5-24 | MDBK | NA | 1.000000 | 330.521864 | 76.11196 | 4.3425745 |
+| 303.176194 | 25.27119 | bIFIT1 | bIFNa 5-24 | MDBK | NA | 1.000000 | 303.176194 | 76.11196 | 3.9832924 |
+| 9.922701 | 29.90040 | bIFIT1 | bRSV dSH 1-24 | MDBK | NA | 1.059168 | 9.368392 | 76.11196 | 0.1230870 |
+| 10.996113 | 29.76134 | bIFIT1 | bRSV dSH 1-24 | MDBK | NA | 1.059168 | 10.381841 | 76.11196 | 0.1364022 |
+| 10.281110 | 29.85236 | bIFIT1 | bRSV dSH 1-24 | MDBK | NA | 1.059168 | 9.706780 | 76.11196 | 0.1275329 |
+| 802.470892 | 23.95345 | bIFIT1 | hRSV 1-24 | MDBK | NA | 0.089599 | 8956.245110 | 76.11196 | 117.6719792 |
+| 978.897474 | 23.68442 | bIFIT1 | hRSV 1-24 | MDBK | NA | 0.089599 | 10925.313055 | 76.11196 | 143.5426560 |
+| 832.106893 | 23.90436 | bIFIT1 | hRSV 1-24 | MDBK | NA | 0.089599 | 9287.007616 | 76.11196 | 122.0177154 |
+| 94.195160 | 26.85368 | bIFIT1 | Mock | MDBK | NA | 1.293524 | 72.820582 | 76.11196 | 0.9567561 |
+| 87.352478 | 26.95577 | bIFIT1 | Mock | MDBK | NA | 1.293524 | 67.530628 | 76.11196 | 0.8872538 |
+| 113.810273 | 26.59759 | bIFIT1 | Mock | MDBK | NA | 1.293524 | 87.984673 | 76.11196 | 1.1559901 |
+
+## Save data
+
+``` r
+fwrite(target_data_modelled_ddct_factorised, 
+       paste('../Adjusted-Data/', 
+             paste('Analysed', params$target_gene, sep = "_"), 
+             '.csv', 
+             sep = ''))
+```
 
 ## Statistics
 
@@ -514,7 +537,7 @@ shapiro.test(target_data_modelled_ddct_factorised$Value_normalised[1:3]) # test 
     ##  Shapiro-Wilk normality test
     ## 
     ## data:  target_data_modelled_ddct_factorised$Value_normalised[1:3]
-    ## W = 0.96452, p-value = 0.6381
+    ## W = 0.82587, p-value = 0.1779
 
 ``` r
 shapiro.test(target_data_modelled_ddct_factorised$Value_normalised[4:6]) # test all values in one condition
@@ -524,7 +547,7 @@ shapiro.test(target_data_modelled_ddct_factorised$Value_normalised[4:6]) # test 
     ##  Shapiro-Wilk normality test
     ## 
     ## data:  target_data_modelled_ddct_factorised$Value_normalised[4:6]
-    ## W = 0.87185, p-value = 0.3008
+    ## W = 0.96452, p-value = 0.6381
 
 ``` r
 shapiro.test(target_data_modelled_ddct_factorised$Value_normalised[7:9]) # test all values in one condition
@@ -534,7 +557,7 @@ shapiro.test(target_data_modelled_ddct_factorised$Value_normalised[7:9]) # test 
     ##  Shapiro-Wilk normality test
     ## 
     ## data:  target_data_modelled_ddct_factorised$Value_normalised[7:9]
-    ## W = 0.92792, p-value = 0.4809
+    ## W = 0.87185, p-value = 0.3008
 
 ``` r
 shapiro.test(residuals(lm(Value_normalised~Condition, target_data_modelled_ddct_factorised))) # test all values in the whole dataset
@@ -544,7 +567,7 @@ shapiro.test(residuals(lm(Value_normalised~Condition, target_data_modelled_ddct_
     ##  Shapiro-Wilk normality test
     ## 
     ## data:  residuals(lm(Value_normalised ~ Condition, target_data_modelled_ddct_factorised))
-    ## W = 0.93414, p-value = 0.5217
+    ## W = 0.68791, p-value = 0.0006461
 
 **NON NORMAL DISTRIBUTION**
 
@@ -576,8 +599,8 @@ leveneTest(Value_normalised~Condition, target_data_modelled_ddct_factorised)
 
     ## Levene's Test for Homogeneity of Variance (center = median)
     ##       Df F value Pr(>F)
-    ## group  2  1.0632 0.4025
-    ##        6
+    ## group  3  1.6915 0.2454
+    ##        8
 
 **EQUAL VARIANCE OF RESIDUALS**
 
@@ -594,26 +617,32 @@ dunn.test(target_data_modelled_ddct_factorised$Value_normalised,
     ##   Kruskal-Wallis rank sum test
     ## 
     ## data: x and group
-    ## Kruskal-Wallis chi-squared = 7.2, df = 2, p-value = 0.03
+    ## Kruskal-Wallis chi-squared = 10.3846, df = 3, p-value = 0.02
     ## 
     ## 
     ##                            Comparison of x by group                            
     ##                                 (No adjustment)                                
     ## Col Mean-|
-    ## Row Mean |   bRSV dSH   hRSV 1-2
-    ## ---------+----------------------
-    ## hRSV 1-2 |  -1.341640
-    ##          |     0.1797
+    ## Row Mean |   bIFNa 5-   bRSV dSH   hRSV 1-2
+    ## ---------+---------------------------------
+    ## bRSV dSH |   2.038098
+    ##          |    0.0415*
     ##          |
-    ##     Mock |  -2.683281  -1.341640
-    ##          |    0.0073*     0.1797
+    ## hRSV 1-2 |  -1.019049  -3.057147
+    ##          |     0.3082    0.0022*
+    ##          |
+    ##     Mock |   1.019049  -1.019049   2.038098
+    ##          |     0.3082     0.3082    0.0415*
     ## 
     ## 
     ## List of pairwise comparisons: Z statistic (p-value)
-    ## -----------------------------------------------
-    ## bRSV dSH 1-24 - hRSV 1-24 : -1.341640 (0.1797)
-    ## bRSV dSH 1-24 - Mock      : -2.683281 (0.0073)*
-    ## hRSV 1-24 - Mock          : -1.341640 (0.1797)
+    ## ------------------------------------------------
+    ## bIFNa 5-24 - bRSV dSH 1-24 :  2.038098 (0.0415)*
+    ## bIFNa 5-24 - hRSV 1-24     : -1.019049 (0.3082)
+    ## bRSV dSH 1-24 - hRSV 1-24  : -3.057147 (0.0022)*
+    ## bIFNa 5-24 - Mock          :  1.019049 (0.3082)
+    ## bRSV dSH 1-24 - Mock       : -1.019049 (0.3082)
+    ## hRSV 1-24 - Mock           :  2.038098 (0.0415)*
     ## 
     ## alpha = 0.05
     ## Reject Ho if p <= alpha
@@ -632,28 +661,116 @@ combinations.
 
 Group-wise comparison is below:
 
-bRSV dSH 1-24 - hRSV 1-24 : -1.341640 (0.1797) bRSV dSH 1-24 - Mock :
--2.683281 (0.0073)\* hRSV 1-24 - Mock : -1.341640 (0.1797)
+bIFNa 5-24 - Mock : 1.019049 (0.3082) bRSV dSH 1-24 - Mock : -1.019049
+(0.3082) hRSV 1-24 - Mock : 2.038098 (0.0415)\*
 
-## Plotting
+## Plotting Final Figure
 
 ``` r
-plot_target_data +
-  geom_signif(
-    comparisons = list(c(
-      params$conditions[1], 
-      params$conditions[2])), 
-    annotation = params$pvals[1], 
-    y_position = 0.93*params$range - 1*(params$range*0.075), 
-    tip_length = 0, vjust= -0.2, size = 0.7,
-    textsize = textsize_values[1]) +
-              
-  geom_signif(
-    comparisons = list(c(
-      params$conditions[1], 
-      params$conditions[3])), 
-    annotation = params$pvals[2], 
-    y_position = 0.93*params$range - 0*(params$range*0.075), 
-    tip_length = 0, vjust= -0.2, size = 0.7, 
-    textsize = textsize_values[2])
+plot_normalised_values <- ggplot(target_data_modelled_ddct_factorised %>% filter(Condition != params$conditions[1])) +
+  aes(x = Value_normalised, 
+      y = fct_rev(fct_relevel(Condition, 
+                              params$conditions[2], 
+                              params$conditions[3],
+                              params$conditions[4]))) +
+  geom_jitter(shape=17, size=2, width = 0, height = 0.3, color="#131112") +
+  stat_summary(fun.y=median, geom="point", size=1.8, color="#A41237") 
 ```
+
+    ## Warning: The `fun.y` argument of `stat_summary()` is deprecated as of ggplot2 3.3.0.
+    ## ℹ Please use the `fun` argument instead.
+    ## This warning is displayed once every 8 hours.
+    ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+    ## generated.
+
+``` r
+plot_normalised_values <- plot_normalised_values +
+  labs(
+    title = paste("Gene Expression", params$target_gene, sep = " "),
+    y = NULL,
+    x = 'Fold Change'
+  ) +
+  scale_x_continuous(trans = log2_trans(),
+                     breaks = trans_breaks("log2", function(x) 2^x, n = 8),
+                     labels = trans_format("log2", math_format(2^.x)),
+                     limits = c(2^-5,2^10),
+                     sec.axis = sec_axis(trans = identity,
+                                         breaks = c(2^-4, 2^-2, 2^0, 2^2, 2^4, 2^6, 2^8, 2^10),
+                                         labels = c(0.062, 0.25, 1, 4, 16, 64, 256, 1024)))
+```
+
+    ## Warning: The `trans` argument of `sec_axis()` is deprecated as of ggplot2 3.5.0.
+    ## ℹ Please use the `transform` argument instead.
+    ## This warning is displayed once every 8 hours.
+    ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+    ## generated.
+
+``` r
+plot_normalised_values <- plot_normalised_values +
+  
+  annotate("text", size = 2, fontface = "bold", hjust = 0, x = 600, y = params$conditions[2],  label = "0.0415") +
+  annotate("text", size = 2, fontface = "bold", hjust = 0, x = 600, y = params$conditions[3], label = "0.3082") +
+  annotate("text", size = 2, fontface = "bold", hjust = 0, x = 600, y = params$conditions[4], label = "0.3082")
+```
+
+``` r
+plot_normalised_values <- plot_normalised_values +
+  theme_classic() +
+  theme(
+    plot.title = element_text(
+      size = 8, 
+      face = 'bold', 
+      margin = margin(0, 0, 5, 0), 
+      hjust = 0.5
+    ),
+    axis.text.y = element_text(
+      angle=0, 
+      size=6, 
+      vjust=0.2),
+    axis.title.x = element_text(
+      size = 7, 
+      face='bold', 
+      vjust=-0.5, 
+      margin = margin(0, 0, 0, 0)),
+    axis.title.y = element_blank(),
+    axis.text.x=element_text(
+      angle=0, 
+      size=6, 
+      vjust=0.5),
+    axis.ticks.y=element_blank(),
+    panel.grid.major.y = element_line(color = "gray86",
+                                      size = 0.1,
+                                      linetype = 1),
+    legend.position = "none"
+  )
+```
+
+    ## Warning: The `size` argument of `element_line()` is deprecated as of ggplot2 3.4.0.
+    ## ℹ Please use the `linewidth` argument instead.
+    ## This warning is displayed once every 8 hours.
+    ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+    ## generated.
+
+``` r
+plot_normalised_values <- plot_normalised_values  +
+  geom_vline(xintercept = 1, 
+             linetype = "dotted", 
+             color = '#2e222f', 
+             linewidth = 1) +
+  geom_vline(xintercept = 4, 
+             linetype = "dotted", 
+             color ="#A41237", 
+             linewidth = 1) +
+  geom_vline(xintercept = 0.25, 
+             linetype = "dotted", 
+             color = "#A41237", 
+             linewidth = 1)
+```
+
+``` r
+plot_normalised_values
+```
+
+![](copy_number_gapdh_normalised_Example_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+Some final text
