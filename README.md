@@ -124,7 +124,7 @@ Some text about what the fuck are we doing
 Put amplification efficiency equation
 
 ``` math
-\mbox{Amplification Efficiency} = 10^{-1/\mbox{slope}}-1
+\text{Amplification Efficiency} = 10^{-1/\text{slope}}-1
 ```
 
 ``` r
@@ -235,9 +235,26 @@ plot_standard_curve <- plot_standard_curve +
 
     ## `geom_smooth()` using formula = 'y ~ x'
 
-![](Reports/copy_number_gapdh_normalised_Example_files/figure-gfm/standard_curve_plot_display,%20-1.png)<!-- -->
+![](copy_number_gapdh_normalised_Example_files/figure-gfm/standard_curve_plot_display,%20-1.png)<!-- -->
 
 ### Saving Figure
+
+``` r
+ggsave(filename = paste(
+  paste("plot_standard_curve", 
+                    params$target_gene, 
+                    params$primer_set,
+                    sep = "_"), '.png', sep = ''), 
+       plot = plot_standard_curve, 
+       device = 'png', 
+       path = '../Figures', 
+       dpi = 600, 
+       height = 16, 
+       width = 20, 
+       units = 'cm')
+```
+
+    ## `geom_smooth()` using formula = 'y ~ x'
 
 # 2. Housekeeping Gene Control
 
@@ -247,14 +264,110 @@ Some text about what the fuck
 
 ## Data Loading
 
+Load `ct_data.csv` from `/Data` folder, and filter the target gene and
+primer set used based on the declared parameters in YAML.
+
 ``` r
 housekeeping_gene_data <- fread('../Data/ct_data.csv') %>% 
-  filter(Target == params$housekeeping_gene, Condition %in% params$conditions)
+  filter(Target == params$housekeeping_gene, 
+         Cell_line == params$cell_line,
+         Condition %in% params$conditions)
 ```
+
+|       Ct | Target | Condition     | Cell_line | Additional_info |
+|---------:|:-------|:--------------|:----------|:----------------|
+| 25.22434 | bGAPDH | bRSV dSH 1-24 | MDBK      | NA              |
+| 26.25955 | bGAPDH | bRSV dSH 1-24 | MDBK      | NA              |
+| 25.54487 | bGAPDH | bRSV dSH 1-24 | MDBK      | NA              |
+| 22.78984 | bGAPDH | hRSV 1-24     | MDBK      | NA              |
+| 22.28562 | bGAPDH | hRSV 1-24     | MDBK      | NA              |
+| 21.41880 | bGAPDH | hRSV 1-24     | MDBK      | NA              |
+| 22.23001 | bGAPDH | Mock          | MDBK      | NA              |
+| 22.17195 | bGAPDH | Mock          | MDBK      | NA              |
+| 22.01028 | bGAPDH | Mock          | MDBK      | NA              |
 
 ## Processing Data
 
-## Make Factors
+wriet about what the fuck is happening
+
+equation for ddCt
+
+``` math
+\text{Relative Quantification} = 2^{\Updelta\Updelta \text{Ct}}
+```
+
+``` math
+\Updelta\Updelta \text{Ct} = \Updelta \text{Ct}_{\text{Test Samples}}-\Updelta \text{Ct}_{\text{Calibrator Samples}}
+```
+
+``` math
+\Updelta \text{Ct}_{\text{Test Samples}} = \text{Ct}_{\text{Target Gene in Tests}}-\text{Ct}_{\text{Reference Gene in Tests}}
+```
+
+``` math
+\Updelta \text{Ct}_{\text{Calibrator Samples}} = \text{Ct}_{\text{Target Gene in Calibrator}}-\text{Ct}_{\text{Reference Gene in Calibrator}}
+```
+
+``` r
+housekeeping_gene_data <- housekeeping_gene_data |> mutate(
+  control_mean = mean(
+    Ct[Condition == params$conditions[1]],
+    na.rm = T),
+  log2_dCt = 2^ (- (Ct - control_mean)),
+  control_mean_log = mean(
+    log2_dCt[Condition == params$conditions[1]],
+    na.rm = T),
+  Value_norm = log2_dCt / control_mean_log
+)
+```
+
+| Ct | Target | Condition | Cell_line | Additional_info | control_mean | log2_dCt | control_mean_log | Value_norm |
+|---:|:---|:---|:---|:---|---:|---:|---:|---:|
+| 25.22434 | bGAPDH | bRSV dSH 1-24 | MDBK | NA | 22.13742 | 0.1176908 | 1.0021 | 0.1174441 |
+| 26.25955 | bGAPDH | bRSV dSH 1-24 | MDBK | NA | 22.13742 | 0.0574268 | 1.0021 | 0.0573064 |
+| 25.54487 | bGAPDH | bRSV dSH 1-24 | MDBK | NA | 22.13742 | 0.0942440 | 1.0021 | 0.0940465 |
+| 22.78984 | bGAPDH | hRSV 1-24 | MDBK | NA | 22.13742 | 0.6362078 | 1.0021 | 0.6348746 |
+| 22.28562 | bGAPDH | hRSV 1-24 | MDBK | NA | 22.13742 | 0.9023694 | 1.0021 | 0.9004784 |
+| 21.41880 | bGAPDH | hRSV 1-24 | MDBK | NA | 22.13742 | 1.6455992 | 1.0021 | 1.6421508 |
+| 22.23001 | bGAPDH | Mock | MDBK | NA | 22.13742 | 0.9378337 | 1.0021 | 0.9358684 |
+| 22.17195 | bGAPDH | Mock | MDBK | NA | 22.13742 | 0.9763464 | 1.0021 | 0.9743004 |
+| 22.01028 | bGAPDH | Mock | MDBK | NA | 22.13742 | 1.0921197 | 1.0021 | 1.0898311 |
+
+## Factorisation
+
+REMANE ME!!!
+
+``` r
+housekeeping_gene_data <- aggregate(x=housekeeping_gene_data, 
+                                    by=list(housekeeping_gene_data$Condition),
+                                    FUN = mean)
+```
+
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+    ## Warning in mean.default(X[[i]], ...): argument is not numeric or logical:
+    ## returning NA
+
+``` r
+housekeeping_gene_data <- housekeeping_gene_data %>%
+  arrange(match(Group.1, params$conditions))
+
+housekeeping_factor_vector <- rep(housekeeping_gene_data$Value_norm, each=3)
+```
 
 # 3. Factorised Copy Number Extrapolation
 
@@ -264,86 +377,265 @@ Some text about what the fuck
 
 ## Data loading and filtering
 
+Load `ct_data.csv` from `/Data` folder, and filter the target gene and
+primer set used based on the declared parameters in YAML.
+
 ``` r
 target_data <- fread('../Data/copy_number_extrapolation_data.csv') %>%
-  filter(Target == params$target_gene, Condition %in% params$conditions)
+  filter(Target == params$target_gene,
+         Cell_line == params$cell_line,
+         Condition %in% params$conditions)
 ```
+
+| Copy_number |       Ct | Target | Condition     | Cell_line | Additional_info |
+|:------------|---------:|:-------|:--------------|:----------|:----------------|
+| NA          | 25.90040 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
+| NA          | 25.76134 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
+| NA          | 25.85236 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
+| NA          | 23.95345 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
+| NA          | 23.68442 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
+| NA          | 23.90436 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
+| NA          | 26.85368 | bIFIT1 | Mock          | MDBK      | NA              |
+| NA          | 26.95577 | bIFIT1 | Mock          | MDBK      | NA              |
+| NA          | 26.59759 | bIFIT1 | Mock          | MDBK      | NA              |
 
 ## Copy number extrapolation
 
+``` r
+target_data_modelled <- target_data |> 
+  mutate(
+    Copy_number = 10^predict(model_standard_curve, 
+                             newdata = target_data))
+```
+
+| Copy_number |       Ct | Target | Condition     | Cell_line | Additional_info |
+|------------:|---------:|:-------|:--------------|:----------|:----------------|
+|   190.47700 | 25.90040 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
+|   211.08230 | 25.76134 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
+|   197.35705 | 25.85236 | bIFIT1 | bRSV dSH 1-24 | MDBK      | NA              |
+|   802.47089 | 23.95345 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
+|   978.89747 | 23.68442 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
+|   832.10689 | 23.90436 | bIFIT1 | hRSV 1-24     | MDBK      | NA              |
+|    94.19516 | 26.85368 | bIFIT1 | Mock          | MDBK      | NA              |
+|    87.35248 | 26.95577 | bIFIT1 | Mock          | MDBK      | NA              |
+|   113.81027 | 26.59759 | bIFIT1 | Mock          | MDBK      | NA              |
+
+## Save data
+
+PUT CODE TO SAVE ANALYSED DATA
+
 ## Factorisation based on housekeeping gene levels
+
+wriet about what the fuck is happening
+
+equation for ddCt
+
+``` math
+\text{Relative Quantification} = 2^{\Updelta\Updelta \text{Ct}}
+```
+
+``` math
+\Updelta\Updelta \text{Ct} = \Updelta \text{Ct}_{\text{Test Samples}}-\Updelta \text{Ct}_{\text{Calibrator Samples}}
+```
+
+``` math
+\Updelta \text{Ct}_{\text{Test Samples}} = \text{Ct}_{\text{Target Gene in Tests}}-\text{Ct}_{\text{Reference Gene in Tests}}
+```
+
+``` math
+\Updelta \text{Ct}_{\text{Calibrator Samples}} = \text{Ct}_{\text{Target Gene in Calibrator}}-\text{Ct}_{\text{Reference Gene in Calibrator}}
+```
+
+``` r
+target_data_modelled_ddct_factorised <- target_data_modelled |> 
+  mutate(
+    Factor = housekeeping_factor_vector,
+    Copy_number_modified = Copy_number / Factor,
+    Control_mean = mean(
+      Copy_number_modified[Condition == params$conditions[1]], 
+      na.rm = T
+    ),
+    Value_normalised = Copy_number_modified / Control_mean
+  )
+```
+
+| Copy_number | Ct | Target | Condition | Cell_line | Additional_info | Factor | Copy_number_modified | Control_mean | Value_normalised |
+|---:|---:|:---|:---|:---|:---|---:|---:|---:|---:|
+| 190.47700 | 25.90040 | bIFIT1 | bRSV dSH 1-24 | MDBK | NA | 1.000000 | 190.4770 | 1098.814 | 0.1733479 |
+| 211.08230 | 25.76134 | bIFIT1 | bRSV dSH 1-24 | MDBK | NA | 1.000000 | 211.0823 | 1098.814 | 0.1921002 |
+| 197.35705 | 25.85236 | bIFIT1 | bRSV dSH 1-24 | MDBK | NA | 1.000000 | 197.3570 | 1098.814 | 0.1796092 |
+| 802.47089 | 23.95345 | bIFIT1 | hRSV 1-24 | MDBK | NA | 1.059168 | 757.6427 | 1098.814 | 0.6895098 |
+| 978.89747 | 23.68442 | bIFIT1 | hRSV 1-24 | MDBK | NA | 1.059168 | 924.2136 | 1098.814 | 0.8411014 |
+| 832.10689 | 23.90436 | bIFIT1 | hRSV 1-24 | MDBK | NA | 1.059168 | 785.6232 | 1098.814 | 0.7149740 |
+| 94.19516 | 26.85368 | bIFIT1 | Mock | MDBK | NA | 0.089599 | 1051.2966 | 1098.814 | 0.9567561 |
+| 87.35248 | 26.95577 | bIFIT1 | Mock | MDBK | NA | 0.089599 | 974.9266 | 1098.814 | 0.8872538 |
+| 113.81027 | 26.59759 | bIFIT1 | Mock | MDBK | NA | 0.089599 | 1270.2177 | 1098.814 | 1.1559901 |
 
 ## Statistics
 
+based on the [statistics
+pipeline](../Reports/Templates/Statistic-pipeline.md)
+
+### Visual Assesment
+
+#### Normal Distribution by Boxplot
+
+``` r
+boxplot(Value_normalised~Condition, target_data_modelled_ddct_factorised)
+```
+
+![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_boxplot-1.png)<!-- -->
+
+#### Testing equality of variance assumptions
+
+``` r
+plot(lm(Value_normalised~Condition, target_data_modelled_ddct_factorised))
+```
+
+![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-1.png)<!-- -->![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-2.png)<!-- -->![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-3.png)<!-- -->![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-4.png)<!-- -->
+
+**1st and the last plots:** we want symmetrical data about the 0
+horizontal line
+
+**2nd plot:** we want residual points to be as close to the predicted
+line as possible
+
+**3rd plot:** we want for red line to be approx. horizontal
+
+### Assumption of Normality
+
+**p value \> 0.05 means normal distribution**
+
+``` r
+shapiro.test(target_data_modelled_ddct_factorised$Value_normalised[1:3]) # test all values in one condition
+```
+
+    ## 
+    ##  Shapiro-Wilk normality test
+    ## 
+    ## data:  target_data_modelled_ddct_factorised$Value_normalised[1:3]
+    ## W = 0.96452, p-value = 0.6381
+
+``` r
+shapiro.test(target_data_modelled_ddct_factorised$Value_normalised[4:6]) # test all values in one condition
+```
+
+    ## 
+    ##  Shapiro-Wilk normality test
+    ## 
+    ## data:  target_data_modelled_ddct_factorised$Value_normalised[4:6]
+    ## W = 0.87185, p-value = 0.3008
+
+``` r
+shapiro.test(target_data_modelled_ddct_factorised$Value_normalised[7:9]) # test all values in one condition
+```
+
+    ## 
+    ##  Shapiro-Wilk normality test
+    ## 
+    ## data:  target_data_modelled_ddct_factorised$Value_normalised[7:9]
+    ## W = 0.92792, p-value = 0.4809
+
+``` r
+shapiro.test(residuals(lm(Value_normalised~Condition, target_data_modelled_ddct_factorised))) # test all values in the whole dataset
+```
+
+    ## 
+    ##  Shapiro-Wilk normality test
+    ## 
+    ## data:  residuals(lm(Value_normalised ~ Condition, target_data_modelled_ddct_factorised))
+    ## W = 0.93414, p-value = 0.5217
+
+**NON NORMAL DISTRIBUTION**
+
+### Assumption of homogeniety of variance for non normal distribution
+
+**p value \> 0.05 means equal variance**
+
+``` r
+library(car, quietly = TRUE)
+```
+
+    ## 
+    ## Attaching package: 'car'
+
+    ## The following object is masked from 'package:dplyr':
+    ## 
+    ##     recode
+
+    ## The following object is masked from 'package:purrr':
+    ## 
+    ##     some
+
+``` r
+leveneTest(Value_normalised~Condition, target_data_modelled_ddct_factorised)
+```
+
+    ## Warning in leveneTest.default(y = y, group = group, ...): group coerced to
+    ## factor.
+
+    ## Levene's Test for Homogeneity of Variance (center = median)
+    ##       Df F value Pr(>F)
+    ## group  2  1.0632 0.4025
+    ##        6
+
+**EQUAL VARIANCE OF RESIDUALS**
+
+### Statistical Parameters for Non-Normal Distribution and Equal Variance
+
+``` r
+library(dunn.test, quietly = T)
+dunn.test(target_data_modelled_ddct_factorised$Value_normalised, 
+          target_data_modelled_ddct_factorised$Condition, 
+          altp=T,
+          list=T)
+```
+
+    ##   Kruskal-Wallis rank sum test
+    ## 
+    ## data: x and group
+    ## Kruskal-Wallis chi-squared = 7.2, df = 2, p-value = 0.03
+    ## 
+    ## 
+    ##                            Comparison of x by group                            
+    ##                                 (No adjustment)                                
+    ## Col Mean-|
+    ## Row Mean |   bRSV dSH   hRSV 1-2
+    ## ---------+----------------------
+    ## hRSV 1-2 |  -1.341640
+    ##          |     0.1797
+    ##          |
+    ##     Mock |  -2.683281  -1.341640
+    ##          |    0.0073*     0.1797
+    ## 
+    ## 
+    ## List of pairwise comparisons: Z statistic (p-value)
+    ## -----------------------------------------------
+    ## bRSV dSH 1-24 - hRSV 1-24 : -1.341640 (0.1797)
+    ## bRSV dSH 1-24 - Mock      : -2.683281 (0.0073)*
+    ## hRSV 1-24 - Mock          : -1.341640 (0.1797)
+    ## 
+    ## alpha = 0.05
+    ## Reject Ho if p <= alpha
+
+Kruskal test finds there is any significant difference across the whole
+dataset. If the p-value is **ABOVE** 0.05 the analysis should be stopped
+here without comparing groups!
+
+Important parameters: chi-squared and p-value (include in reports)
+
+The dunn test displays both comparison matrix and comparison list of
+tested groups. P values are the individual p values between group
+combinations.
+
+**Test passed**
+
+Group-wise comparison is below:
+
+bRSV dSH 1-24 - hRSV 1-24 : -1.341640 (0.1797) bRSV dSH 1-24 - Mock :
+-2.683281 (0.0073)\* hRSV 1-24 - Mock : -1.341640 (0.1797)
+
 ## Plotting
-
-# Libraries and Data Loading
-
-the libraries needed and why
-
-# Data Manipulation
-
-## Linear Model Creation
-
-``` r
-model_lmscdata <- lm(log10(Copy_number)~Ct,  data = scdata)
-```
-
-## Linear Model Figure
-
-``` r
-plot_scdata
-```
-
-## Housekeeping Log2 Data Generation
-
-``` r
-housekeeping_gene_data <-  housekeeping_gene_data %>% 
-  mutate(control_mean = mean(Ct[Condition == params$conditions[1]], na.rm = T),
-        log2_dCt = 2^ (- (Ct - control_mean)),
-        control_mean_log = mean(log2_dCt[Condition == params$conditions[1]], na.rm = T),
-        Value_norm = log2_dCt / control_mean_log) %>%
-  group_by(Condition) %>%
-  mutate(mean_Ct = mean(Ct)) %>%
-  ungroup() %>%
-  arrange(match(Condition, params$conditions))
-```
-
-## Extrapolation From Standard Curve and Factorisation by Housekeeping Gene Data
-
-``` r
-target_data <- target_data %>% 
-  arrange(match(Condition, params$conditions)) %>%
-  mutate(Copy_number = 10^predict(model_lmscdata, newdata = target_data),
-         Factor = housekeeping_gene_data$mean_Ct,
-         Copy_number_mod = Copy_number / Factor,
-         Control_mean = mean(Copy_number_mod[Condition == params$conditions[1]], na.rm = T),
-         Value_norm = Copy_number_mod / Control_mean)
-```
-
-``` r
-kable(target_data, caption = "Final Table")
-```
-
-## Dataset Save
-
-``` r
-print("SAVE THE DATAAA")
-```
-
-Data was saved to **HELL**
-
-# Statistics
-
-## Normal distribution and equal variance
-
-``` r
-library(DTK, quietly = T)
-anova(lm(Value_norm~Condition, target_data))
-TukeyHSD(aov(Value_norm~Condition, target_data))
-```
-
-# Data Visualisation
 
 ``` r
 plot_target_data +
@@ -365,11 +657,3 @@ plot_target_data +
     tip_length = 0, vjust= -0.2, size = 0.7, 
     textsize = textsize_values[2])
 ```
-
-## Figure Save
-
-``` r
-print("SAVE THE FIGUREEEEE")
-```
-
-Figure was saved to **HELL**

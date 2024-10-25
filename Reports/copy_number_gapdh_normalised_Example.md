@@ -420,6 +420,10 @@ target_data_modelled <- target_data |>
 |    87.35248 | 26.95577 | bIFIT1 | Mock          | MDBK      | NA              |
 |   113.81027 | 26.59759 | bIFIT1 | Mock          | MDBK      | NA              |
 
+## Save data
+
+PUT CODE TO SAVE ANALYSED DATA
+
 ## Factorisation based on housekeeping gene levels
 
 wriet about what the fuck is happening
@@ -442,77 +446,196 @@ equation for ddCt
 \Updelta \text{Ct}_{\text{Calibrator Samples}} = \text{Ct}_{\text{Target Gene in Calibrator}}-\text{Ct}_{\text{Reference Gene in Calibrator}}
 ```
 
+``` r
+target_data_modelled_ddct_factorised <- target_data_modelled |> 
+  mutate(
+    Factor = housekeeping_factor_vector,
+    Copy_number_modified = Copy_number / Factor,
+    Control_mean = mean(
+      Copy_number_modified[Condition == params$conditions[1]], 
+      na.rm = T
+    ),
+    Value_normalised = Copy_number_modified / Control_mean
+  )
+```
+
+| Copy_number | Ct | Target | Condition | Cell_line | Additional_info | Factor | Copy_number_modified | Control_mean | Value_normalised |
+|---:|---:|:---|:---|:---|:---|---:|---:|---:|---:|
+| 190.47700 | 25.90040 | bIFIT1 | bRSV dSH 1-24 | MDBK | NA | 1.000000 | 190.4770 | 1098.814 | 0.1733479 |
+| 211.08230 | 25.76134 | bIFIT1 | bRSV dSH 1-24 | MDBK | NA | 1.000000 | 211.0823 | 1098.814 | 0.1921002 |
+| 197.35705 | 25.85236 | bIFIT1 | bRSV dSH 1-24 | MDBK | NA | 1.000000 | 197.3570 | 1098.814 | 0.1796092 |
+| 802.47089 | 23.95345 | bIFIT1 | hRSV 1-24 | MDBK | NA | 1.059168 | 757.6427 | 1098.814 | 0.6895098 |
+| 978.89747 | 23.68442 | bIFIT1 | hRSV 1-24 | MDBK | NA | 1.059168 | 924.2136 | 1098.814 | 0.8411014 |
+| 832.10689 | 23.90436 | bIFIT1 | hRSV 1-24 | MDBK | NA | 1.059168 | 785.6232 | 1098.814 | 0.7149740 |
+| 94.19516 | 26.85368 | bIFIT1 | Mock | MDBK | NA | 0.089599 | 1051.2966 | 1098.814 | 0.9567561 |
+| 87.35248 | 26.95577 | bIFIT1 | Mock | MDBK | NA | 0.089599 | 974.9266 | 1098.814 | 0.8872538 |
+| 113.81027 | 26.59759 | bIFIT1 | Mock | MDBK | NA | 0.089599 | 1270.2177 | 1098.814 | 1.1559901 |
+
 ## Statistics
 
+based on the [statistics
+pipeline](../Reports/Templates/Statistic-pipeline.md)
+
+### Visual Assesment
+
+#### Normal Distribution by Boxplot
+
+``` r
+boxplot(Value_normalised~Condition, target_data_modelled_ddct_factorised)
+```
+
+![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_boxplot-1.png)<!-- -->
+
+#### Testing equality of variance assumptions
+
+``` r
+plot(lm(Value_normalised~Condition, target_data_modelled_ddct_factorised))
+```
+
+![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-1.png)<!-- -->![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-2.png)<!-- -->![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-3.png)<!-- -->![](copy_number_gapdh_normalised_Example_files/figure-gfm/stats_variance_plots-4.png)<!-- -->
+
+**1st and the last plots:** we want symmetrical data about the 0
+horizontal line
+
+**2nd plot:** we want residual points to be as close to the predicted
+line as possible
+
+**3rd plot:** we want for red line to be approx. horizontal
+
+### Assumption of Normality
+
+**p value \> 0.05 means normal distribution**
+
+``` r
+shapiro.test(target_data_modelled_ddct_factorised$Value_normalised[1:3]) # test all values in one condition
+```
+
+    ## 
+    ##  Shapiro-Wilk normality test
+    ## 
+    ## data:  target_data_modelled_ddct_factorised$Value_normalised[1:3]
+    ## W = 0.96452, p-value = 0.6381
+
+``` r
+shapiro.test(target_data_modelled_ddct_factorised$Value_normalised[4:6]) # test all values in one condition
+```
+
+    ## 
+    ##  Shapiro-Wilk normality test
+    ## 
+    ## data:  target_data_modelled_ddct_factorised$Value_normalised[4:6]
+    ## W = 0.87185, p-value = 0.3008
+
+``` r
+shapiro.test(target_data_modelled_ddct_factorised$Value_normalised[7:9]) # test all values in one condition
+```
+
+    ## 
+    ##  Shapiro-Wilk normality test
+    ## 
+    ## data:  target_data_modelled_ddct_factorised$Value_normalised[7:9]
+    ## W = 0.92792, p-value = 0.4809
+
+``` r
+shapiro.test(residuals(lm(Value_normalised~Condition, target_data_modelled_ddct_factorised))) # test all values in the whole dataset
+```
+
+    ## 
+    ##  Shapiro-Wilk normality test
+    ## 
+    ## data:  residuals(lm(Value_normalised ~ Condition, target_data_modelled_ddct_factorised))
+    ## W = 0.93414, p-value = 0.5217
+
+**NON NORMAL DISTRIBUTION**
+
+### Assumption of homogeniety of variance for non normal distribution
+
+**p value \> 0.05 means equal variance**
+
+``` r
+library(car, quietly = TRUE)
+```
+
+    ## 
+    ## Attaching package: 'car'
+
+    ## The following object is masked from 'package:dplyr':
+    ## 
+    ##     recode
+
+    ## The following object is masked from 'package:purrr':
+    ## 
+    ##     some
+
+``` r
+leveneTest(Value_normalised~Condition, target_data_modelled_ddct_factorised)
+```
+
+    ## Warning in leveneTest.default(y = y, group = group, ...): group coerced to
+    ## factor.
+
+    ## Levene's Test for Homogeneity of Variance (center = median)
+    ##       Df F value Pr(>F)
+    ## group  2  1.0632 0.4025
+    ##        6
+
+**EQUAL VARIANCE OF RESIDUALS**
+
+### Statistical Parameters for Non-Normal Distribution and Equal Variance
+
+``` r
+library(dunn.test, quietly = T)
+dunn.test(target_data_modelled_ddct_factorised$Value_normalised, 
+          target_data_modelled_ddct_factorised$Condition, 
+          altp=T,
+          list=T)
+```
+
+    ##   Kruskal-Wallis rank sum test
+    ## 
+    ## data: x and group
+    ## Kruskal-Wallis chi-squared = 7.2, df = 2, p-value = 0.03
+    ## 
+    ## 
+    ##                            Comparison of x by group                            
+    ##                                 (No adjustment)                                
+    ## Col Mean-|
+    ## Row Mean |   bRSV dSH   hRSV 1-2
+    ## ---------+----------------------
+    ## hRSV 1-2 |  -1.341640
+    ##          |     0.1797
+    ##          |
+    ##     Mock |  -2.683281  -1.341640
+    ##          |    0.0073*     0.1797
+    ## 
+    ## 
+    ## List of pairwise comparisons: Z statistic (p-value)
+    ## -----------------------------------------------
+    ## bRSV dSH 1-24 - hRSV 1-24 : -1.341640 (0.1797)
+    ## bRSV dSH 1-24 - Mock      : -2.683281 (0.0073)*
+    ## hRSV 1-24 - Mock          : -1.341640 (0.1797)
+    ## 
+    ## alpha = 0.05
+    ## Reject Ho if p <= alpha
+
+Kruskal test finds there is any significant difference across the whole
+dataset. If the p-value is **ABOVE** 0.05 the analysis should be stopped
+here without comparing groups!
+
+Important parameters: chi-squared and p-value (include in reports)
+
+The dunn test displays both comparison matrix and comparison list of
+tested groups. P values are the individual p values between group
+combinations.
+
+**Test passed**
+
+Group-wise comparison is below:
+
+bRSV dSH 1-24 - hRSV 1-24 : -1.341640 (0.1797) bRSV dSH 1-24 - Mock :
+-2.683281 (0.0073)\* hRSV 1-24 - Mock : -1.341640 (0.1797)
+
 ## Plotting
-
-# Libraries and Data Loading
-
-the libraries needed and why
-
-# Data Manipulation
-
-## Linear Model Creation
-
-``` r
-model_lmscdata <- lm(log10(Copy_number)~Ct,  data = scdata)
-```
-
-## Linear Model Figure
-
-``` r
-plot_scdata
-```
-
-## Housekeeping Log2 Data Generation
-
-``` r
-housekeeping_gene_data <-  housekeeping_gene_data %>% 
-  mutate(control_mean = mean(Ct[Condition == params$conditions[1]], na.rm = T),
-        log2_dCt = 2^ (- (Ct - control_mean)),
-        control_mean_log = mean(log2_dCt[Condition == params$conditions[1]], na.rm = T),
-        Value_norm = log2_dCt / control_mean_log) %>%
-  group_by(Condition) %>%
-  mutate(mean_Ct = mean(Ct)) %>%
-  ungroup() %>%
-  arrange(match(Condition, params$conditions))
-```
-
-## Extrapolation From Standard Curve and Factorisation by Housekeeping Gene Data
-
-``` r
-target_data <- target_data %>% 
-  arrange(match(Condition, params$conditions)) %>%
-  mutate(Copy_number = 10^predict(model_lmscdata, newdata = target_data),
-         Factor = housekeeping_gene_data$mean_Ct,
-         Copy_number_mod = Copy_number / Factor,
-         Control_mean = mean(Copy_number_mod[Condition == params$conditions[1]], na.rm = T),
-         Value_norm = Copy_number_mod / Control_mean)
-```
-
-``` r
-kable(target_data, caption = "Final Table")
-```
-
-## Dataset Save
-
-``` r
-print("SAVE THE DATAAA")
-```
-
-Data was saved to **HELL**
-
-# Statistics
-
-## Normal distribution and equal variance
-
-``` r
-library(DTK, quietly = T)
-anova(lm(Value_norm~Condition, target_data))
-TukeyHSD(aov(Value_norm~Condition, target_data))
-```
-
-# Data Visualisation
 
 ``` r
 plot_target_data +
@@ -534,11 +657,3 @@ plot_target_data +
     tip_length = 0, vjust= -0.2, size = 0.7, 
     textsize = textsize_values[2])
 ```
-
-## Figure Save
-
-``` r
-print("SAVE THE FIGUREEEEE")
-```
-
-Figure was saved to **HELL**
