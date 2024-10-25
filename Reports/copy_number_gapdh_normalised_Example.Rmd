@@ -15,20 +15,18 @@ editor_options:
     wrap: 72
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-```{r reading_ext_script, include=FALSE, cache=FALSE, eval=FALSE}
-knitr::read_chunk("../Report/Templates/external_chunk.R")
-```
-
 ```{r knitr_libraries, include=F}
 library(knitr)
 library(kableExtra)
 library(rmarkdown)
-setwd("../")
+library(rprojroot)
 ```
+
+```{r set_project_root, include=F}
+root <- find_root(has_file("README.md"))
+setwd(root)
+```
+
 
 # Introduction
 
@@ -266,7 +264,7 @@ ggsave(filename = paste(
        device = 'png', 
        path = '../Figures', 
        dpi = 600, 
-       height = 16, 
+       height = 12, 
        width = 20, 
        units = 'cm')
 ```
@@ -594,6 +592,22 @@ plot_normalised_values <- plot_normalised_values  +
 
 ```{r}
 plot_normalised_values
+```
+
+#### Save plot
+
+```{r}
+ggsave(filename = paste(
+  paste("plot_normalised_values", 
+                    params$target_gene,
+                    sep = "_"), '.png', sep = ''), 
+       plot = plot_normalised_values, 
+       device = 'png', 
+       path = '../Figures', 
+       dpi = 600, 
+       height = 16, 
+       width = 20, 
+       units = 'cm')
 ```
 
 Some final text

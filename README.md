@@ -245,7 +245,7 @@ ggsave(filename = paste(
        device = 'png', 
        path = '../Figures', 
        dpi = 600, 
-       height = 16, 
+       height = 12, 
        width = 20, 
        units = 'cm')
 ```
@@ -772,5 +772,21 @@ plot_normalised_values
 ```
 
 ![](copy_number_gapdh_normalised_Example_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+#### Save plot
+
+``` r
+ggsave(filename = paste(
+  paste("plot_normalised_values", 
+                    params$target_gene,
+                    sep = "_"), '.png', sep = ''), 
+       plot = plot_normalised_values, 
+       device = 'png', 
+       path = '../Figures', 
+       dpi = 600, 
+       height = 16, 
+       width = 20, 
+       units = 'cm')
+```
 
 Some final text
