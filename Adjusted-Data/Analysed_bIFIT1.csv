@@ -1,4 +1,4 @@
-Copy_number,Ct,Target,Condition,Cell_line,Additional_info,Factor,Copy_number_modified,Control_mean,Value_normalisedalised
+Copy_number,Ct,Target,Condition,Cell_line,Additional_info,Factor,Copy_number_modified,Control_mean,Value_normalised
 333.639607377671,25.14157,bIFIT1,bIFNa 5-24,MDBK,,1,333.639607377671,76.1119611469634,4.38353712543882
 330.521863981835,25.15428,bIFIT1,bIFNa 5-24,MDBK,,1,330.521863981835,76.1119611469634,4.34257453100749
 303.17619354293,25.27119,bIFIT1,bIFNa 5-24,MDBK,,1,303.17619354293,76.1119611469634,3.98329236264891

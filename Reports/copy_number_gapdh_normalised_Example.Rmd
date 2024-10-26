@@ -3,7 +3,10 @@ title: "Example of qPCR Pipeline Usage"
 subtitle: "Copy number GAPDH normalised dataset"
 author: "Michal Varga"
 date: "Last edited: `r format(Sys.time(), '%Y-%m-%d')`"
-output: rmarkdown::github_document
+output: 
+  github_document:
+    toc: true
+    toc_depth: 2
 params:
     target_gene: bIFIT1
     primer_set: PS11
@@ -23,6 +26,24 @@ library(rmarkdown)
 
 # Introduction
 
+intro to qPCR
+
+
+Normal ddCt:
+
+```{math}
+\text{Relative Quantification} = 2^{\Updelta\Updelta \text{Ct}}
+```
+```{math}
+\Updelta\Updelta \text{Ct} = \Updelta \text{Ct}_{\text{Test Samples}}-\Updelta \text{Ct}_{\text{Calibrator Samples}}
+```
+```{math}
+\Updelta \text{Ct}_{\text{Test Samples}} = \text{Ct}_{\text{Target Gene in Tests}}-\text{Ct}_{\text{Reference Gene in Tests}}
+```
+```{math}
+\Updelta \text{Ct}_{\text{Calibrator Samples}} = \text{Ct}_{\text{Target Gene in Calibrator}}-\text{Ct}_{\text{Reference Gene in Calibrator}}
+```
+
 Purpose: 
 
 based on scripts:
@@ -41,7 +62,7 @@ parameters incuded in script:
 
 Link to [stats pipeline]()
 
-## Libraries (maybe put them when they are used?)
+These are the required libraries, used in this project:
 
 ```{r required_libraries, warning=FALSE, message=FALSE}
 library(tidyverse) # for data manipulation
@@ -54,6 +75,8 @@ library(scales) # for log10 axis on figures
 ## Introduction
 
 Some text about what the fuck
+
+obtaining Ct values from known copy numbers
 
 ## Data Loading
 
@@ -71,7 +94,7 @@ standard_curve_data |> kable()
 ## Linear Model Production
 ### Construct Linear Model
 
-Text about what we do in this step
+Create a linear model of standard curve by log10 transforming copy number variables.
 
 ```{r standard_curve_model}
 model_standard_curve <- lm(log10(Copy_number)~Ct, data = standard_curve_data)
@@ -82,7 +105,7 @@ lm(log10(Copy_number)~Ct, data = standard_curve_data)
 
 ### Construct a Prediction Based on the Linear Model
 
-Text about what we do in this step
+1. Construct prediction model (fit, and upper and lower probability intervals) for graph construction.
 
 ```{r standard_curve_model_prediction}
 prediction_model_standard_curve <- 10^predict(
@@ -96,8 +119,7 @@ prediction_model_standard_curve <- 10^predict(
   ) |> kable()
 ```
 
-
-Text about what we do in this step
+2. Join the prediction data to the original dataset.
 
 ```{r standard_curve_dataset_bind}
 data_combined_standard_curve <- cbind(
@@ -114,7 +136,7 @@ cbind(
 
 ### Calculate Amplification Efficiency
 
-Some text about what the fuck are we doing
+Calculate the amplification efficiency of the primer set based on the equation below. Save the variable into a formated string, that will be used for figure creation.
 
 
 ```{math}
@@ -144,22 +166,7 @@ paste(
 ## Figure of Standard Curve
 ### Constructing Figure
 
-Text about what we do in this step
-
-```{r standard_curve_figure_parameters}
-plot_title_standard_curve <- paste(params$target_gene, 
-                    '-', 
-                    params$primer_set,
-                    'Standard Curve', 
-                    sep = " ")
-x_annotation_position_standard_curve <- 1000000
-y_annotation_position_standard_curve <- 37.5
-top_range_standard_curve <- 40
-y_axis_title_standard_curve <- 'Cycle Threshold'
-x_axis_title_standard_curve <- 'Copy Number'
-```
-
-Text about what we do in this step
+1. Initial figure constructed using `ggplot`, with a title that is based on the target gene and primer set that were specified in `params`.
 
 ```{r standard_curve_figure_initial_ggplot}
 plot_standard_curve <- ggplot(
@@ -169,26 +176,20 @@ plot_standard_curve <- ggplot(
   geom_point() +
   stat_smooth(method = lm) +
   labs(
-    title = plot_title_standard_curve,
-    y = x_axis_title_standard_curve,
-    x = y_axis_title_standard_curve)
+    title = paste(
+      params$target_gene, '-', 
+      params$primer_set, 'Standard Curve', sep = " "),
+    y = 'Cycle Threshold',
+    x = 'Copy Number')
 ```
 
-Text about what we do in this step
+2. The y-axis was set from 0-40, with breaks every 10 points. The x-axis was set to be log10 format. Both were done using the **`scale`** library.
 
-```{r standard_curve_figure_y_axis}
+```{r standard_curve_figure_axis}
 plot_standard_curve <- plot_standard_curve +
   scale_y_continuous(
-    breaks = seq(from = 0, 
-                 to = top_range_standard_curve, 
-                 by = 10),
-    limits = c(0,top_range_standard_curve))
-```
-
-Text about what we do in this step
-
-```{r standard_curve_figure_log_scale}
-plot_standard_curve <- plot_standard_curve +
+    breaks = seq(from = 0, to = 40, by = 10),
+    limits = c(0, 40)) +
   scale_x_log10(
     labels = trans_format("log10", 
                           math_format(10^.x)),
@@ -197,45 +198,30 @@ plot_standard_curve <- plot_standard_curve +
   annotation_logticks(sides='b')
 ```
 
-Text about what we do in this step
+3. The figure format was adjuseted based on the `theme_bw` theme.
 
 ```{r standard_curve_figure_theme}
 plot_standard_curve <- plot_standard_curve +
   theme_bw() +
   theme(
-  plot.title = element_text(
-    size = 15, 
-    face = 'bold', 
-    margin = margin(8, 0, 8, 0), 
-    hjust = 0.5),
-  axis.text.y = element_text(
-    angle = 0, 
-    size = 9, 
-    vjust = 0.5),
-  axis.text.x.bottom = element_text(
-    angle = 0, 
-    size = 9, 
-    vjust = 0.5),
-  axis.title.x = element_text(
-    size = 12, 
-    face = 'bold', 
-    vjust = -0.5, 
-    margin = margin(0, 8, 0, 0)),
-  axis.title.y = element_text(
-    size = 12, 
-    face='bold', 
-    vjust=-0.5, 
-    margin = margin(0, 8, 0, 0)),
+  plot.title = element_text(size = 15, face = 'bold', hjust = 0.5,
+                            margin = margin(8, 0, 8, 0)),
+  axis.text.y = element_text(angle = 0, size = 9, vjust = 0.5),
+  axis.text.x.bottom = element_text(angle = 0, size = 9, vjust = 0.5),
+  axis.title.x = element_text(size = 12, face = 'bold', vjust = -0.5, 
+                              margin = margin(0, 8, 0, 0)),
+  axis.title.y = element_text(size = 12, face='bold', vjust=-0.5,
+                              margin = margin(0, 8, 0, 0)),
   aspect.ratio = 1/2)
 ```
 
-Text about what we do in this step
+4. Lastly, the previously calucalated primer amplification efficiency was displayed in the top right corner.
 
 ```{r standard_curve_figure_annotation}
 plot_standard_curve <- plot_standard_curve +
   annotate('text',
-           y = y_annotation_position_standard_curve, 
-           x = x_annotation_position_standard_curve, 
+           y = 37.5, 
+           x = 1000000, 
            label = efficiency_standard_curve, 
            size = 5)
 ```
@@ -245,11 +231,11 @@ plot_standard_curve
 
 ### Saving Figure
 
-Text about what we do in this step
+The figure was saved using the `ggsave` function in the `/Figures` folder. Its name is based on the target gene and primer set that were specified in `params`.
 
-```{r standard_curve_figure_save}
+```{r standard_curve_figure_save, message=FALSE}
 ggsave(filename = paste(
-  paste("plot_standard_curve", 
+              paste("plot_standard_curve", 
                     params$target_gene, 
                     params$primer_set,
                     sep = "_"), '.png', sep = ''), 
@@ -265,12 +251,11 @@ ggsave(filename = paste(
 # 2. Housekeeping Gene Control
 ## Introduction
 
-Some text about what the fuck
+Some text about what a housekeeping gene is and how we can use it to modify our extrapolated copy numbers later.
 
 ## Data Loading
 
-Load `ct_data.csv` from `/Data` folder, and filter the target gene and primer set used based on the declared parameters in YAML.
-
+Load `ct_data.csv` from `/Data` folder, and filter the housekeeping gene and primer set used based on the declared parameters in `params`.
 
 ```{r data_loading_housekeeping}
 housekeeping_data <- fread('../Data/ct_data.csv') %>% 
@@ -284,21 +269,24 @@ housekeeping_data |> kable()
 
 ## Processing Data
 
-write about what the fuck is happening
+1. An average Ct value is computed for the control condition
+```{math}
+\text{control\_mean} = \frac{\sum_{i \in \text{Control}} \text{Ct}_i}{n_{\text{Control}}}
+```
 
-equation for ddCt for housekeeping (CHANGE ME!!!)
+2. Background (average control Ct values) is removed, and the resulting Ct values are log2 transformed.
+```{math}
+\log_2(\Delta \text{Ct}) = 2^{- (\text{Ct} - \text{control\_mean})}
+```
 
+3. An average of log2 transformed control values is calculated.
 ```{math}
-\text{Relative Quantification} = 2^{\Updelta\Updelta \text{Ct}}
+\text{control\_mean\_log} = \frac{\sum_{i \in \text{Control}} \log_2(\Delta \text{Ct}_i)}{n_{\text{Control}}}
 ```
+
+4. Values are normalised to the control log2 values, to make the rest of the changes relative to the control values.
 ```{math}
-\Updelta\Updelta \text{Ct} = \Updelta \text{Ct}_{\text{Test Samples}}-\Updelta \text{Ct}_{\text{Calibrator Samples}}
-```
-```{math}
-\Updelta \text{Ct}_{\text{Test Samples}} = \text{Ct}_{\text{Target Gene in Tests}}-\text{Ct}_{\text{Reference Gene in Tests}}
-```
-```{math}
-\Updelta \text{Ct}_{\text{Calibrator Samples}} = \text{Ct}_{\text{Target Gene in Calibrator}}-\text{Ct}_{\text{Reference Gene in Calibrator}}
+\text{Value\_normalised} = \frac{\log_2(\Delta \text{Ct})}{\text{control\_mean\_log}}
 ```
 
 
@@ -319,9 +307,9 @@ ddct_housekeeping_data |> kable()
 
 ## Factorisation
 
-Text about what we do in this step
+1. The normalised values are aggregated per condition to create average normalised values.
 
-```{r housekeeping_aggregated}
+```{r housekeeping_aggregated, warning=FALSE}
 aggregated_housekeeping_data <- aggregate(x=ddct_housekeeping_data, 
                                by=list(ddct_housekeeping_data$Condition),
                                FUN = mean)
@@ -330,7 +318,7 @@ aggregated_housekeeping_data <- aggregate(x=ddct_housekeeping_data,
 aggregated_housekeeping_data |> kable()
 ```
 
-Text about what we do in this step
+2. The values are arranged based on the order of conditions in `params`.
 
 ```{r housekeeping_arranged}
 arranged_aggregated_housekeeping_data <- aggregated_housekeeping_data %>%
@@ -340,13 +328,14 @@ arranged_aggregated_housekeeping_data <- aggregated_housekeeping_data %>%
 arranged_aggregated_housekeeping_data |> kable()
 ```
 
-Text about what we do in this step
+3. The average normalised values of housekeeping gene expression are triplicated and saved as a vector. This will be used to adjust the target gene expression values.
 
 ```{r housekeeping_factros_vector}
-housekeeping_factor_vector <- rep(arranged_aggregated_housekeeping_data$Value_normalised, each=3)
+housekeeping_factor_vector <- rep(arranged_aggregated_housekeeping_data$Value_normalised, 
+                                  each=3)
 ```
 ```{r housekeeping_factros_vector_display, echo=FALSE, warning=FALSE}
-housekeeping_factor_vector |> kable()
+housekeeping_factor_vector
 ```
 
 # 3. Factorised Copy Number Extrapolation
@@ -355,7 +344,7 @@ housekeeping_factor_vector |> kable()
 
 Some text about what the fuck
 
-## Data loading and filtering
+## Data Loading and Filtering
 
 Load `ct_data.csv` from `/Data` folder, and filter the target gene and primer set used based on the declared parameters in YAML.
 
@@ -371,60 +360,54 @@ target_data |> kable()
 ```
 
 ## Data Wrangling
-### Copy number extrapolation
+### Copy Number Extrapolation
 
 ```{r copy_number_extrapolation}
-target_data_modelled <- target_data |> 
-  mutate(
-    Copy_number = 10^predict(model_standard_curve, 
-                             newdata = target_data))
+target_copy_number <- target_data |> 
+  mutate(Copy_number = 10^predict(model_standard_curve, 
+                                  newdata = target_data))
 ```
 
 ```{r copy_number_extrapolation_display, echo=FALSE, warning=FALSE}
-target_data_modelled |> kable()
+target_copy_number |> kable()
 ```
 
-### Factorisation based on housekeeping gene levels
+### Factorisation Based on a Housekeeping Gene Levels
 
 wriet about what the fuck is happening
 
 equation for ddCt 
 
 ```{math}
-\text{Relative Quantification} = 2^{\Updelta\Updelta \text{Ct}}
+\text{Copy\_number\_modified} = \frac{\text{Copy\_number}}{\text{Factor}}
 ```
 ```{math}
-\Updelta\Updelta \text{Ct} = \Updelta \text{Ct}_{\text{Test Samples}}-\Updelta \text{Ct}_{\text{Calibrator Samples}}
+\text{Control\_mean} = \frac{\sum_{i \in \text{Control}} \text{Copy\_number\_modified}_i}{n_{\text{Control}}}
 ```
 ```{math}
-\Updelta \text{Ct}_{\text{Test Samples}} = \text{Ct}_{\text{Target Gene in Tests}}-\text{Ct}_{\text{Reference Gene in Tests}}
-```
-```{math}
-\Updelta \text{Ct}_{\text{Calibrator Samples}} = \text{Ct}_{\text{Target Gene in Calibrator}}-\text{Ct}_{\text{Reference Gene in Calibrator}}
+\text{Value\_normalised} = \frac{\text{Copy\_number\_modified}}{\text{Control\_mean}}
 ```
 
 
 ```{r copy_number_ddct_factorised}
-target_data_modelled_ddct_factorised <- target_data_modelled |> 
+final_target_data <- target_copy_number |> 
   mutate(
     Factor = housekeeping_factor_vector,
     Copy_number_modified = Copy_number / Factor,
     Control_mean = mean(
       Copy_number_modified[Condition == params$conditions[1]], 
-      na.rm = T
-    ),
-    Value_normalisedalised = Copy_number_modified / Control_mean
-  )
+      na.rm = T),
+    Value_normalised = Copy_number_modified / Control_mean)
 ```
 
 ```{r copy_number_ddct_factorised_display, echo=FALSE, warning=FALSE}
-target_data_modelled_ddct_factorised |> kable()
+final_target_data |> kable()
 ```
 
 #### Save data
 
 ```{r save_data}
-fwrite(target_data_modelled_ddct_factorised, 
+fwrite(final_target_data, 
        paste('../Adjusted-Data/', 
              paste('Analysed', params$target_gene, sep = "_"), 
              '.csv', 
@@ -433,20 +416,26 @@ fwrite(target_data_modelled_ddct_factorised,
 
 ## Statistics
 
-based on the [statistics pipeline](Reports\Templates\Statistics-pipeline.md)
+The statistical analysis was conducted based on the [Statistical Analysis Pipeline](Reports\Templates\Statistics-pipeline.md)
 
 ### Visual Assesment
 
-#### Normal Distribution by Boxplot
+#### Data Distribution by Boxplot
+
+The visual assesment of normal distribution was done by constructing a boxplot.
 
 ```{r stats_boxplot}
-boxplot(Value_normalisedalised~Condition, target_data_modelled_ddct_factorised)
+boxplot(Value_normalised~Condition, final_target_data)
 ```
 
-#### Testing equality of variance assumptions
+This dataset's normality is difficult to assess visualy.
+
+#### Testing Equality of Variance Assumptions
+
+The visual assesment of equality of variance was done by calling `plot` function on a constructed linear model.
 
 ```{r stats_variance_plots}
-plot(lm(Value_normalisedalised~Condition, target_data_modelled_ddct_factorised))
+plot(lm(Value_normalised~Condition, final_target_data))
 ```
 
 **1st and the last plots:** we want symmetrical data about the 0 horizontal line
@@ -455,43 +444,44 @@ plot(lm(Value_normalisedalised~Condition, target_data_modelled_ddct_factorised))
 
 **3rd plot:** we want for red line to be approx. horizontal
 
-### Assumption of Normality
+We see equality of variance for all but one condition.
+
+### Mathematical Assesment
+#### Assumption of Normality
+
+To test for the normality per condition, the Shapiro-Wilk normality test was performed on each group of values
 
 **p value \> 0.05 means normal distribution**
 
 ```{r shapiro.test_single}
-shapiro.test(target_data_modelled_ddct_factorised$Value_normalisedalised[1:3]) # test all values in one condition
-shapiro.test(target_data_modelled_ddct_factorised$Value_normalisedalised[4:6]) # test all values in one condition
-shapiro.test(target_data_modelled_ddct_factorised$Value_normalisedalised[7:9]) # test all values in one condition
+shapiro.test(final_target_data$Value_normalised[1:3]) # test all values in one condition
+shapiro.test(final_target_data$Value_normalised[4:6]) # test all values in one condition
+shapiro.test(final_target_data$Value_normalised[7:9]) # test all values in one condition
+shapiro.test(final_target_data$Value_normalised[10:12]) # test all values in one condition
 ```
 
+The Shapiro-Wilk normality test was also performed on the whole dataset.
 
 ```{r shapiro.test_total}
-shapiro.test(residuals(lm(Value_normalisedalised~Condition, target_data_modelled_ddct_factorised))) # test all values in the whole dataset
+shapiro.test(residuals(lm(Value_normalised~Condition, final_target_data))) # test all values in the whole dataset
 ```
 
-**NON NORMAL DISTRIBUTION**
+Each of the conditions individualy confront to normal distribution, however, the dataset as a whole does not meet this assumption.
 
-### Assumption of homogeniety of variance for non normal distribution
+**Result: NON NORMAL DISTRIBUTION**
+
+#### Assumption of Homogeniety of Variance of Residuals for **Non-Normal Distribution**
 
 **p value \> 0.05 means equal variance**
 
-```{r leveneTest}
+```{r leveneTest, message=FALSE}
 library(car, quietly = TRUE)
-leveneTest(Value_normalisedalised~Condition, target_data_modelled_ddct_factorised)
+leveneTest(Value_normalised~Condition, final_target_data)
 ```
 
-**EQUAL VARIANCE OF RESIDUALS**
+**Result: EQUAL VARIANCE OF RESIDUALS**
 
-### Statistical Parameters for Non-Normal Distribution and Equal Variance
-
-```{r kruskal.test}
-library(dunn.test, quietly = T)
-dunn.test(target_data_modelled_ddct_factorised$Value_normalisedalised, 
-          target_data_modelled_ddct_factorised$Condition, 
-          altp=T,
-          list=T)
-```
+### Statistical Parameters for **Non-Normal Distribution** and **Equal Variance of Residuals**
 
 Kruskal test finds there is any significant difference across the whole dataset. If the p-value is **ABOVE** 0.05 the analysis should be stopped here without comparing groups!
 
@@ -499,20 +489,35 @@ Important parameters: chi-squared and p-value (include in reports)
 
 The dunn test displays both comparison matrix and comparison list of tested groups. P values are the individual p values between group combinations.
 
-**Test passed**
+```{r kruskal.test}
+library(dunn.test, quietly = T)
+dunn.test(final_target_data$Value_normalised, 
+          final_target_data$Condition, 
+          altp=T,
+          list=T)
+```
+
+**Result: TEST PASSED!**
 
 Group-wise comparison is below:
 
-bIFNa 5-24 - Mock          :  1.019049 (0.3082)
-bRSV dSH 1-24 - Mock       : -1.019049 (0.3082)
-hRSV 1-24 - Mock           :  2.038098 (0.0415)*
+| **Comparison**            | **Z Statistic**| **p-value**|
+|---------------------------|----------------|------------|
+| bIFNa 5-24 - Mock         |  1.019049      | 0.3082     |
+| bRSV dSH 1-24 - Mock      | -1.019049      | 0.3082     |
+| hRSV 1-24 - Mock          |  2.038098      | 0.0415*    |
 
-## Plotting Final Figure
+## Final Figure of Relative Gene Expression Levels
 ### Constructing Figure
 
-```{r final_figure_initial_ggplot}
-plot_normalised_values <- ggplot(target_data_modelled_ddct_factorised %>% filter(Condition != params$conditions[1])) +
-  aes(x = Value_normalisedalised, 
+
+1. Initial figure constructed using ggplot.
+
+with a title that is based on the target gene that were specified in params
+
+```{r final_figure_initial_ggplot, warning=F}
+plot_normalised_values <- ggplot(final_target_data %>% filter(Condition != params$conditions[1])) +
+  aes(x = Value_normalised, 
       y = fct_rev(fct_relevel(Condition, 
                               params$conditions[2], 
                               params$conditions[3],
@@ -521,9 +526,9 @@ plot_normalised_values <- ggplot(target_data_modelled_ddct_factorised %>% filter
   stat_summary(fun.y=median, geom="point", size=1.8, color="#A41237") 
 ```
 
+2.
 
-
-```{r}
+```{r final_figure_x_axis}
 plot_normalised_values <- plot_normalised_values +
   labs(
     title = paste("Gene Expression", params$target_gene, sep = " "),
@@ -539,45 +544,38 @@ plot_normalised_values <- plot_normalised_values +
                                          labels = c(0.062, 0.25, 1, 4, 16, 64, 256, 1024)))
 ```
 
-```{r}
+3.
+
+```{r final_figure_p_values}
 plot_normalised_values <- plot_normalised_values +
-  
-  annotate("text", size = 3, fontface = "bold", x = 600, y = params$conditions[2],  label = "0.0415") +
-  annotate("text", size = 3, fontface = "bold", x = 600, y = params$conditions[3], label = "0.3082") +
-  annotate("text", size = 3, fontface = "bold", x = 600, y = params$conditions[4], label = "0.3082")
+  annotate("text", size = 3, fontface = "bold", x = 600, 
+           y = params$conditions[2],  label = "0.0415") +
+  annotate("text", size = 3, fontface = "bold", x = 600, 
+           y = params$conditions[3], label = "0.3082") +
+  annotate("text", size = 3, fontface = "bold", x = 600, 
+           y = params$conditions[4], label = "0.3082")
 ```
 
-```{r final_figure_theme}
+4.
+
+```{r final_figure_theme, warning=F}
 plot_normalised_values <- plot_normalised_values +
   theme_classic() +
   theme(
-    plot.title = element_text(
-      size = 15, 
-      face = 'bold', 
-      margin = margin(0, 0, 5, 0), 
-      hjust = 0.5
-    ),
-    axis.text.y = element_text(
-      angle=0, 
-      size=9, 
-      vjust=0.2),
-    axis.title.x = element_text(
-      size = 12, 
-      face='bold', 
-      vjust=-0.5, 
-      margin = margin(0, 0, 0, 0)),
+    plot.title = element_text(size = 15, face = 'bold', hjust = 0.5,
+                              margin = margin(0, 0, 5, 0)),
+    axis.text.y = element_text(angle=0, size=9, vjust=0.2),
+    axis.title.x = element_text(size = 12, face='bold', vjust=-0.5,
+                                margin = margin(0, 0, 0, 0)),
     axis.title.y = element_blank(),
-    axis.text.x=element_text(
-      angle=0, 
-      size=9, 
-      vjust=0.5),
+    axis.text.x=element_text(angle=0, size=9, vjust=0.5),
     axis.ticks.y=element_blank(),
-    panel.grid.major.y = element_line(color = "gray86",
-                                      size = 0.1,
-                                      linetype = 1),
+    panel.grid.major.y = element_line(color = "gray86", size = 0.1, linetype = 1),
     legend.position = "none",
     aspect.ratio = 1/2)
 ```
+
+5.
 
 ```{r final_figure_annotation_lines}
 plot_normalised_values <- plot_normalised_values  +
@@ -598,11 +596,13 @@ plot_normalised_values <- plot_normalised_values  +
 plot_normalised_values
 ```
 
-### Save plot
+### Saveing Figure
 
-```{r}
+Some final text
+
+```{r final_figure_save}
 ggsave(filename = paste(
-  paste("plot_normalised_values", 
+              paste("plot_normalised_values", 
                     params$target_gene,
                     sep = "_"), '.png', sep = ''), 
        plot = plot_normalised_values, 
@@ -613,6 +613,8 @@ ggsave(filename = paste(
        width = 20, 
        units = 'cm')
 ```
+
+# Conclusion
 
 Some final text
 
