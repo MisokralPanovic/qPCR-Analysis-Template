@@ -3,26 +3,6 @@ Example of qPCR Pipeline Usage
 Michal Varga
 Last edited: 2024-10-26
 
-- [Introduction](#introduction)
-- [1. Standard Curve](#1-standard-curve)
-  - [Introduction](#introduction-1)
-  - [Data Loading](#data-loading)
-  - [Linear Model Production](#linear-model-production)
-  - [Figure of Standard Curve](#figure-of-standard-curve)
-- [2. Housekeeping Gene Control](#2-housekeeping-gene-control)
-  - [Introduction](#introduction-2)
-  - [Data Loading](#data-loading-1)
-  - [Processing Data](#processing-data)
-  - [Factorisation](#factorisation)
-- [3. Factorised Copy Number
-  Extrapolation](#3-factorised-copy-number-extrapolation)
-  - [Introduction](#introduction-3)
-  - [Data Loading and Filtering](#data-loading-and-filtering)
-  - [Data Wrangling](#data-wrangling)
-  - [Statistics](#statistics)
-  - [Final Figure of Relative Gene Expression
-    Levels](#final-figure-of-relative-gene-expression-levels)
-
 # Introduction
 
 Quantitative Polymerase Chain Reaction (qPCR) is a laboratory technique
