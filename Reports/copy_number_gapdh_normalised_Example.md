@@ -22,7 +22,6 @@ Last edited: 2024-10-26
   - [Statistics](#statistics)
   - [Final Figure of Relative Gene Expression
     Levels](#final-figure-of-relative-gene-expression-levels)
-- [Conclusion](#conclusion)
 
 # Introduction
 
@@ -255,7 +254,7 @@ plot_standard_curve <- plot_standard_curve +
 
     ## `geom_smooth()` using formula = 'y ~ x'
 
-![](copy_number_gapdh_normalised_Example_files/figure-gfm/standard_curve_plot_display,%20-1.png)<!-- -->
+![](copy_number_gapdh_normalised_Example_files/figure-gfm/standard_curve_plot_display-1.png)<!-- -->
 
 ### Saving Figure
 
@@ -333,7 +332,7 @@ housekeeping_data <- fread('../Data/ct_data.csv') %>%
 \text{control\_mean\_log} = \frac{\sum_{i \in \text{Control}} \log_2(\Delta \text{Ct}_i)}{n_{\text{Control}}}
 ```
 
-4.  Values are normalised to the control log2 values, to make the rest
+4.  Values are standardised to the control log2 values, to make the rest
     of the changes relative to the control values.
 
 ``` math
@@ -449,6 +448,9 @@ target_data <- fread('../Data/copy_number_extrapolation_data.csv') %>%
 
 ### Copy Number Extrapolation
 
+The copy numbers were extrapolated from the obtained Ct values based on
+the model that was generated from the standard curves.
+
 ``` r
 target_copy_number <- target_data |> 
   mutate(Copy_number = 10^predict(model_standard_curve, 
@@ -472,17 +474,24 @@ target_copy_number <- target_data |>
 
 ### Factorisation Based on a Housekeeping Gene Levels
 
-wriet about what the fuck is happening
-
-equation for ddCt
+1.  To adjust for the relative amounts of housekeeping gene in the
+    different conditions (which should be by definition equal), the
+    extrapolated copy numbers were normalised based on the average
+    normalised values of housekeeping gene expression vector.
 
 ``` math
 \text{Copy\_number\_modified} = \frac{\text{Copy\_number}}{\text{Factor}}
 ```
 
+2.  Next, the average control condition copy number was calculated.
+
 ``` math
 \text{Control\_mean} = \frac{\sum_{i \in \text{Control}} \text{Copy\_number\_modified}_i}{n_{\text{Control}}}
 ```
+
+3.  The dataset was standardised based on the average control condition
+    copy number, to make the rest of the changes relative to the control
+    values
 
 ``` math
 \text{Value\_normalised} = \frac{\text{Copy\_number\_modified}}{\text{Control\_mean}}
@@ -515,6 +524,10 @@ final_target_data <- target_copy_number |>
 | 113.810273 | 26.59759 | bIFIT1 | Mock | MDBK | NA | 1.293524 | 87.984673 | 76.11196 | 1.1559901 |
 
 #### Save data
+
+The processed dataset was saved using the `fwrite` function of
+`data.table` in the `/Adjusted-Data` folder. Its name is based on the
+target gene that were specified in `params`.
 
 ``` r
 fwrite(final_target_data, 
@@ -717,10 +730,10 @@ Group-wise comparison is below:
 
 ### Constructing Figure
 
-1.  Initial figure constructed using ggplot.
-
-with a title that is based on the target gene that were specified in
-params
+1.  Initial figure constructed using ggplot. The control condition was
+    removed as by definition it would be 1, and this is redundant. The
+    data was organised per the order of conditions indicated in
+    `params`.
 
 ``` r
 plot_normalised_values <- ggplot(final_target_data %>% filter(Condition != params$conditions[1])) +
@@ -733,7 +746,8 @@ plot_normalised_values <- ggplot(final_target_data %>% filter(Condition != param
   stat_summary(fun.y=median, geom="point", size=1.8, color="#A41237") 
 ```
 
-2.  
+2.  The axis titles were defined and the title is based on the target
+    name, as defined in `params`. The x-axis was transformed into log2.
 
 ``` r
 plot_normalised_values <- plot_normalised_values +
@@ -751,13 +765,7 @@ plot_normalised_values <- plot_normalised_values +
                                          labels = c(0.062, 0.25, 1, 4, 16, 64, 256, 1024)))
 ```
 
-    ## Warning: The `trans` argument of `sec_axis()` is deprecated as of ggplot2 3.5.0.
-    ## ℹ Please use the `transform` argument instead.
-    ## This warning is displayed once every 8 hours.
-    ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-    ## generated.
-
-3.  
+3.The calculated p values were added to the corresponding conditions.
 
 ``` r
 plot_normalised_values <- plot_normalised_values +
@@ -769,7 +777,7 @@ plot_normalised_values <- plot_normalised_values +
            y = params$conditions[4], label = "0.3082")
 ```
 
-4.  
+4.  The figure format was adjuseted based on the `theme_classic` theme.
 
 ``` r
 plot_normalised_values <- plot_normalised_values +
@@ -788,7 +796,10 @@ plot_normalised_values <- plot_normalised_values +
     aspect.ratio = 1/2)
 ```
 
-5.  
+5.  Black line was added that signify the control value. Two red lines
+    were added indicating \|2 log2\| difference from the mean,
+    surpassing which would deem the gene expression to be biologically
+    significant.
 
 ``` r
 plot_normalised_values <- plot_normalised_values  +
@@ -806,15 +817,13 @@ plot_normalised_values <- plot_normalised_values  +
              linewidth = 1)
 ```
 
-``` r
-plot_normalised_values
-```
+![](copy_number_gapdh_normalised_Example_files/figure-gfm/final_figure_display-1.png)<!-- -->
 
-![](copy_number_gapdh_normalised_Example_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+### Saving Figure
 
-### Saveing Figure
-
-Some final text
+The figure was saved using the `ggsave` function in the `/Figures`
+folder. Its name is based on the target gene that were specified in
+`params`.
 
 ``` r
 ggsave(filename = paste(
@@ -829,7 +838,3 @@ ggsave(filename = paste(
        width = 20, 
        units = 'cm')
 ```
-
-# Conclusion
-
-Some final text
